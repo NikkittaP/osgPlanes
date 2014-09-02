@@ -21,10 +21,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	db.setPassword("");
 	bool ok = db.open();
 
-	loadAirports();
-	loadPlanesList();
-	loadPlanesPoints();
-	
 	QString s = QString::fromStdString(currentDateTime.asISO8601());
 	s.replace("T", " ").replace("Z", "");
 	qDebug() << s;
@@ -40,10 +36,16 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	/* Load plane */
 	osg::DisplaySettings::instance()->setNumMultiSamples(8);
-	//osg::ref_ptr<osg::Node> plane_high_ = osgDB::readNodeFile("D:/Progs/3DModels/A320-200/A320-200.osg.0,0,180.rot");
-	//osg::ref_ptr<osg::Node> plane_high = osgDB::readNodeFile("D:/Progs/3DModels/cessna_simple.osg.0,0,180.rot");
-	osg::ref_ptr<osg::Node> plane_high = osgDB::readNodeFile(PATH + "cessna_simple.osg.0,0,0.rot");
+	plane_high = osgDB::readNodeFile(PATH + "cessna_simple.osg.0,0,0.rot");
 	plane_high->accept(whiteColor);
+
+	/* Positioning plane on earth */
+	planesNamesGroup = new osg::Group();
+	Decluttering::setEnabled(planesNamesGroup->getOrCreateStateSet(), true);
+
+	loadAirports();
+	loadPlanesList();
+	loadPlanesPoints(currentDateTime.asTimeStamp());
 
 	/* Load earth */
 	//osg::ref_ptr<osg::Node> globe = osgDB::readNodeFile("C:/GoogleMaps_TMS/tms2.earth");
@@ -57,28 +59,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	mapSRS = mapNode->getMapSRS();
 	geoSRS = mapSRS->getGeographicSRS();
 
-	/* Positioning plane on earth */
-	Style style;
-	planesNamesGroup = new osg::Group();
-	Decluttering::setEnabled(planesNamesGroup->getOrCreateStateSet(), true);
-	Style labelStyle;
-	labelStyle.getOrCreate<TextSymbol>()->alignment() = TextSymbol::ALIGN_LEFT_BOTTOM_BASE_LINE;
-	labelStyle.getOrCreate<TextSymbol>()->fill()->color() = Color::White;
-	for (int i = 0; i < planesInTheSky.size(); i++)
-	{
-		osg::ref_ptr<osg::Node> plane_high_ = dynamic_cast<osg::Node*>(plane_high->clone(osg::CopyOp::DEEP_COPY_ALL));
-		style.getOrCreate<ModelSymbol>()->setModel(plane_high_);
-		planesOnEarth.push_back(new ModelNode(mapNode, style));
-		planesOnEarth[i]->setName("Plane " + std::to_string(planesInTheSky[i]));
-		planesOnEarth[i]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[i].lon, planesCurrentPosition[i].lat, planesCurrentPosition[i].alt, ALTMODE_RELATIVE));
-
-		osg::ref_ptr<LabelNode> _lbl = new LabelNode(mapNode, GeoPoint(geoSRS, planesCurrentPosition[i].lon, planesCurrentPosition[i].lat, planesCurrentPosition[i].alt, ALTMODE_RELATIVE), planesList[i].flight.toStdString(), labelStyle);
-		osg::ref_ptr<osg::Switch> _showHideLbl = new osg::Switch();
-		_showHideLbl->setName("Plane " + std::to_string(i) + " Label");
-		_showHideLbl->addChild(_lbl);
-		planesNamesGroup->addChild(_showHideLbl);
-	}
-
 	/* Adding planes to group */
 	planesGroup = new osg::Group();
 	planesGroup->setName("All planes");
@@ -91,6 +71,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	sky->setDateTime(currentDateTime);
 	sky->addChild(globe.get());
 	sky->setUpdateCallback(new MoveSun);
+	sky->setUpdateCallback(new UpdatePlanesInTheSky);
 
 	root = new osg::Group;
 	root->addChild(sky);

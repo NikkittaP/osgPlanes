@@ -39,37 +39,67 @@ void loadPlanesList()
 	}
 }
 
-void loadPlanesPoints()
+void loadPlanesPoints(double timestamp)
 {
-	for (int i = 1; i < 800; i++)
+	QHashIterator<int, FlightInfo> iter(planesList);
+	while (iter.hasNext())
 	{
-		planesInTheSky.push_back(i);
-		planeCurrentIndex.insert(i, 0);
+		iter.next();
+		int flight_id = iter.key();
+		if (!landedPlanes.contains(flight_id) && !planesInTheSky.contains(flight_id))
+		{
+			FlightInfo flight = iter.value();
 
-		QSqlQuery query;
-		std::vector<FlightPoint> tmp;
-		query.prepare("SELECT second, latitude, longitude, altitude, psi, theta, gamma FROM flight_points WHERE flight_info_id = :id");
-		query.bindValue(":id", i);
-		query.exec();
-		while (query.next()) {
-			FlightPoint point;
-			point.seconds = query.value(0).toFloat();
-			point.lat = query.value(1).toFloat();
-			point.lon = query.value(2).toFloat();
-			point.alt = query.value(3).toFloat();
-			point.psi = query.value(4).toFloat();
-			point.theta = query.value(5).toFloat();
-			point.gamma = query.value(6).toFloat();
+			if (timestamp >= (flight.departureTime.asTimeStamp() - 300.0))
+			{
+				planeCurrentIndex.insert(flight_id, 0);
 
-			tmp.push_back(point);
+				QSqlQuery query;
+				std::vector<FlightPoint> tmp;
+				query.prepare("SELECT second, latitude, longitude, altitude, psi, theta, gamma FROM flight_points WHERE flight_info_id = :id");
+				query.bindValue(":id", flight_id);
+				query.exec();
+				while (query.next()) {
+					FlightPoint point;
+					point.seconds = query.value(0).toFloat();
+					point.lat = query.value(1).toFloat();
+					point.lon = query.value(2).toFloat();
+					point.alt = query.value(3).toFloat();
+					point.psi = query.value(4).toFloat();
+					point.theta = query.value(5).toFloat();
+					point.gamma = query.value(6).toFloat();
+
+					tmp.push_back(point);
+				}
+				planePoints.insert(flight_id, tmp);
+				planesCurrentPosition.insert(flight_id, planePoints[flight_id][0]);
+
+				addPlanesToEarth(flight_id);
+
+				planesInTheSky.push_back(flight_id);
+			}
 		}
-
-		planePoints.insert(i, tmp);
-
-		planesCurrentPosition[i] = planePoints[i][0];
-
-		std::cout << i << " out of 800 is loaded." << std::endl;
 	}
+}
+
+void addPlanesToEarth(int flight_id)
+{
+	Style style;
+	Style labelStyle;
+	labelStyle.getOrCreate<TextSymbol>()->alignment() = TextSymbol::ALIGN_LEFT_BOTTOM_BASE_LINE;
+	labelStyle.getOrCreate<TextSymbol>()->fill()->color() = Color::White;
+
+	osg::ref_ptr<osg::Node> plane_high_ = dynamic_cast<osg::Node*>(plane_high->clone(osg::CopyOp::DEEP_COPY_ALL));
+	style.getOrCreate<ModelSymbol>()->setModel(plane_high_);
+	planesOnEarth.push_back(new ModelNode(mapNode, style));
+	planesOnEarth[planesOnEarth.size()-1]->setName(planesList[flight_id].flight.toStdString());
+	planesOnEarth[planesOnEarth.size() - 1]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE));
+
+	osg::ref_ptr<LabelNode> _lbl = new LabelNode(mapNode, GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE), planesList[flight_id].flight.toStdString(), labelStyle);
+	osg::ref_ptr<osg::Switch> _showHideLbl = new osg::Switch();
+	_showHideLbl->setName(planesList[flight_id].flight.toStdString());
+	_showHideLbl->addChild(_lbl);
+	planesNamesGroup->addChild(_showHideLbl);
 }
 
 /*void parseFlightFile()

@@ -106,7 +106,9 @@ struct FlightInfo {
 };
 
 extern QHash<int, AirportData> airportsList;
-extern std::vector<int> planesInTheSky;
+extern QVector<int> planesInTheSky;
+extern QVector<int> justLandedPlanes;
+extern QList<int> landedPlanes;
 extern QHash<int, FlightInfo> planesList;
 extern QHash<int, int> planeCurrentIndex;
 extern QHash<int, std::vector<FlightPoint>> planePoints;
@@ -114,4 +116,6 @@ extern QHash<int, std::vector<FlightPoint>> planePoints;
 extern QHash<int, FlightPoint> planesCurrentPosition;
 
 extern QString file;
+
+extern osg::ref_ptr<osg::Node> plane_high;
 #endif

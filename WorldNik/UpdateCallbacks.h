@@ -22,4 +22,13 @@ protected:
 	double _prev_clock;
 };
 
+class UpdatePlanesInTheSky : public osg::NodeCallback
+{
+public:
+	UpdatePlanesInTheSky() :_prev_clock(clock()), _prev_sun_clock(clock()){}
+	virtual void operator()(osg::Node* node, osg::NodeVisitor* nv);
+protected:
+	double _prev_clock, _prev_sun_clock;
+};
+
 #endif

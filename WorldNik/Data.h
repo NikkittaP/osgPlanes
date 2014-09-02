@@ -3,7 +3,8 @@
 
 void loadAirports();
 void loadPlanesList();
-void loadPlanesPoints();
+void loadPlanesPoints(double timestamp);
+void addPlanesToEarth(int flight_id);
 
 void parseFlightFile();
 
