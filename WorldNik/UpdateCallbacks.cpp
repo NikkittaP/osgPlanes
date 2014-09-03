@@ -10,10 +10,12 @@ using namespace osgEarth::Util;
 
 void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 {
+	clock_t begin = clock();
 	osg::Group* planes = dynamic_cast<osg::Group*>(node);
 
 	if (planes && (clock() - _prev_clock) / double(CLOCKS_PER_SEC) >= 1.0 / STEPS_PER_SECOND)
 	{
+		mMutex.lock();
 		int planesNum = planesInTheSky.size();
 		double _denom = STEPS_PER_SECOND / _speed;
 
@@ -28,6 +30,8 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			it != planesInTheSky.end();)
 		{
 			int flight_id = *it;
+			if (flight_id < 0)
+				break;
 			int _idx = planeCurrentIndex[flight_id];
 			if ((_idx + 1) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + 1].seconds)
 			{
@@ -37,12 +41,11 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 			if ((_idx + 1) >= planePoints[flight_id].size())
 			{
+				justLandedPlanes.push_back(flight_id);
 				it = planesInTheSky.erase(it);
-				justLandedPlanes.push_back(*it);
 			}
 			else
 			{
-
 				/* Блок независящий от источника данных */
 
 				planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
@@ -53,45 +56,33 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 				planesCurrentPosition[flight_id].gamma += (planePoints[flight_id][_idx + 1].gamma - planePoints[flight_id][_idx].gamma) / (10.0f * _denom);
 				planesCurrentPosition[flight_id].psi += (planePoints[flight_id][_idx + 1].psi - planePoints[flight_id][_idx].psi) / (10.0f * _denom);
 
-				file += QString::number(planeCurrentIndex[flight_id]) + "\t" +
-					QString::number(planesCurrentPosition[flight_id].seconds) + "\t" +
-					QString::number(_time, 'g', 16) + "\t" +
-					QString::fromStdString(currentDateTime.asISO8601()) + "\n";
-
-				/*if (planesCurrentPosition[flight_id].seconds >= 2000)
-				{
-				QString filename = "H:\Data.txt";
-				QFile _file(filename);
-				if (_file.open(QIODevice::ReadWrite))
-				{
-				QTextStream stream(&_file);
-				stream << file << endl;
-				}
-				break;
-				}*/
-
-				FindNodeVisitor findNode(planesList[*it].flight.toStdString());
+				
+				FindNamedNode findNode(planesList[flight_id].flight.toStdString());
 				planes->accept(findNode);
-				ModelNode* plane = dynamic_cast<ModelNode*>(findNode.getFirst());
-				plane->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
-				osg::Quat quat(
-					osg::PI*planesCurrentPosition[flight_id].theta / 180.0, osg::X_AXIS,
-					osg::PI*planesCurrentPosition[flight_id].gamma / 180.0, osg::Y_AXIS,
-					-osg::PI* planesCurrentPosition[flight_id].psi / 180.0, osg::Z_AXIS
-					);
-				plane->setLocalRotation(quat);
-
-				FindNodeVisitor findLabelNode(planesList[*it].flight.toStdString());
+				if (findNode.getNode() != NULL)
+				{
+					ModelNode* plane = dynamic_cast<ModelNode*>(findNode.getNode());
+					plane->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
+					osg::Quat quat(
+						osg::PI*planesCurrentPosition[flight_id].theta / 180.0, osg::X_AXIS,
+						osg::PI*planesCurrentPosition[flight_id].gamma / 180.0, osg::Y_AXIS,
+						-osg::PI* planesCurrentPosition[flight_id].psi / 180.0, osg::Z_AXIS
+						);
+					plane->setLocalRotation(quat);
+				}
+				FindNamedNode findLabelNode(planesList[flight_id].flight.toStdString());
 				planesNamesGroup->accept(findLabelNode);
-				osg::Switch* _switch = dynamic_cast<osg::Switch*>(findLabelNode.getFirst());
-				LabelNode* _lbl = dynamic_cast<LabelNode*>(_switch->getChild(0));
-				_lbl->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
-
+				if (findLabelNode.getNode() != NULL)
+				{
+					osg::Switch* _switch = dynamic_cast<osg::Switch*>(findLabelNode.getNode());
+					LabelNode* _lbl = dynamic_cast<LabelNode*>(_switch->getChild(0));
+					_lbl->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
+				}
 				/***************************************************/
 
-				if (*it == _selectedPlane)
+				if (flight_id == _selectedPlane)
 				{
-					updatePlaneInfoPanel(*it);
+					updatePlaneInfoPanel(flight_id);
 
 					if (isShowingChart)
 					{
@@ -110,6 +101,7 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 				++it;
 			}
 		}
+		mMutex.unlock();
 
 		_prev_clock = clock();
 	}
@@ -127,27 +119,30 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 		else if (scale >1000)
 			scale = 1000;
 
-		for (int i = 0; i < planesOnEarth.size(); i++)
-			planesOnEarth[i]->setScale(osg::Vec3(scale, scale, scale));
+		osg::ref_ptr<osgEarth::Annotation::ModelNode> planeOnEarth;
+		foreach(planeOnEarth, planesOnEarth)
+		{
+			if (planeOnEarth != NULL)
+				planeOnEarth->setScale(osg::Vec3(scale, scale, scale));
+		}
 	}
 	prev_distance_to_earth = e_manip->getDistance();
 
-	traverse(node, nv);
-}
-
-void MoveSun::operator()(osg::Node* node, osg::NodeVisitor* nv)
-{
-	
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	std::cout << "Move planes: " << elapsed_secs << std::endl;
+	file += "Move planes: " + QString::number(elapsed_secs) + "\n";
 
 	traverse(node, nv);
 }
 
 void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 {
+	clock_t begin = clock();
 	if ((clock() - _prev_sun_clock) / double(CLOCKS_PER_SEC) >= 1.0 / STEPS_PER_SECOND)
 	{
 		sky->setDateTime(currentDateTime);
-		std::cout << "In the sky: " << planesInTheSky.size() << ";\t landed: " << landedPlanes.size() << std::endl;
+		//std::cout << "In the sky: " << planesInTheSky.size() << ";\t landed: " << landedPlanes.size() << std::endl;
 		_prev_sun_clock = clock();
 	}
 
@@ -155,20 +150,30 @@ void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 	{
 		double timestamp = currentDateTime.asTimeStamp();
 
-		/* Delete planes that have landed */
-		for (int i = 0; i < justLandedPlanes.size(); i++)
-		{
-			planeCurrentIndex.remove(justLandedPlanes[i]);
-			planePoints.remove(justLandedPlanes[i]);
-			planesCurrentPosition.remove(justLandedPlanes[i]);
-			landedPlanes.push_back(justLandedPlanes[i]);
-		}
-		QVector<int>().swap(justLandedPlanes);
-		/***********************************/
-
-		loadPlanesPoints(timestamp);
+		updatePlanesInTheSkyThread = new UpdatePlanesInTheSkyThread(timestamp);
+		updatePlanesInTheSkyThread->setCancelModeDeferred();
+		updatePlanesInTheSkyThread->start();
 
 		_prev_clock = currentDateTime.asTimeStamp();
+	}
+
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	std::cout << "UpdatePlanesInTheSky: " << elapsed_secs << std::endl;
+	file += "UpdatePlanesInTheSky: " + QString::number(elapsed_secs) + "\n";
+
+	if (currentDateTime.asTimeStamp() >= 1372636800 + 60 * 60)
+	{
+		QString filename = "H:\Data.txt";
+		QFile _file(filename);
+		if (_file.open(QIODevice::ReadWrite))
+		{
+			QTextStream stream(&_file);
+			stream << file << endl;
+		}
+		std::cout << "end" << endl;
+		int aqe;
+		std::cin >> aqe;
 	}
 
 	traverse(node, nv);

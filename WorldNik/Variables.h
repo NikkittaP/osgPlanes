@@ -5,7 +5,7 @@
 #include "NodeVisitors.h"
 #include "BackgroundThreads.h"
 
-const int SCREEN_NUM = 0;
+const int SCREEN_NUM = 1;
 extern int STEPS_PER_SECOND;
 extern std::string PATH;
 extern unsigned int screenWidth, screenHeight, hudChartWidth, hudChartHeight;
@@ -32,7 +32,7 @@ extern osg::ref_ptr<osgEarth::MapNode> mapNode;
 extern osg::ref_ptr<osg::Group> planesGroup;
 extern osg::ref_ptr<osg::Group> planesNamesGroup;
 extern osg::ref_ptr<osg::Group> root;
-extern std::vector<osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
+extern QHash<int, osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
 extern osgEarth::Util::SkyNode* sky;
 extern osgEarth::DateTime currentDateTime;
 extern osgEarth::Util::Controls::LabelControl* currentDateTimeLabel;
@@ -77,6 +77,8 @@ extern CcolorVisitor blueColor;
 extern CcolorVisitor redColor;
 
 extern DrawFlightInfoThread *drawFlightInfoThread;
+extern UpdatePlanesInTheSkyThread *updatePlanesInTheSkyThread;
+extern bool isUpdatingPlanesInTheSky;
 
 struct AirportData {
 	QString IATAcode;
@@ -106,9 +108,10 @@ struct FlightInfo {
 };
 
 extern QHash<int, AirportData> airportsList;
+extern QMutex mMutex;
 extern QVector<int> planesInTheSky;
 extern QVector<int> justLandedPlanes;
-extern QList<int> landedPlanes;
+extern QVector<int> landedPlanes;
 extern QHash<int, FlightInfo> planesList;
 extern QHash<int, int> planeCurrentIndex;
 extern QHash<int, std::vector<FlightPoint>> planePoints;
@@ -118,4 +121,6 @@ extern QHash<int, FlightPoint> planesCurrentPosition;
 extern QString file;
 
 extern osg::ref_ptr<osg::Node> plane_high;
+
+extern QSqlDatabase db;
 #endif

@@ -13,15 +13,6 @@ protected:
 	double _time;
 };
 
-class MoveSun : public osg::NodeCallback
-{
-public:
-	MoveSun() :_prev_clock(clock()){}
-	virtual void operator()(osg::Node* node, osg::NodeVisitor* nv);
-protected:
-	double _prev_clock;
-};
-
 class UpdatePlanesInTheSky : public osg::NodeCallback
 {
 public:

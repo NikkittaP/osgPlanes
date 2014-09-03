@@ -14,7 +14,7 @@ using namespace osgEarth::Util;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+	db = QSqlDatabase::addDatabase("QMYSQL");
 	db.setHostName("localhost");
 	db.setDatabaseName("planes");
 	db.setUserName("root");
@@ -32,7 +32,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	PATH = full_path.string().substr(0, full_path.string().size() - 12);
 
 	std::cout << PATH << std::endl;
-	//osg::ref_ptr<osg::Geode> plane = DrawSimplePlane();
+
+	/* Load earth */
+	osg::ref_ptr<osg::Node> globe = osgDB::readNodeFile("\\\\NIKKITTA\\GoogleMaps_TMS\\tms.earth");
+	globe->setName("Earth");
+	mapNode = MapNode::get(globe);
+	LODBlending* effect = new LODBlending();
+	mapNode->getTerrainEngine()->addEffect(effect);
+
+	mapSRS = mapNode->getMapSRS();
+	geoSRS = mapSRS->getGeographicSRS();
 
 	/* Load plane */
 	osg::DisplaySettings::instance()->setNumMultiSamples(8);
@@ -43,34 +52,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	planesNamesGroup = new osg::Group();
 	Decluttering::setEnabled(planesNamesGroup->getOrCreateStateSet(), true);
 
+	planesGroup = new osg::Group();
+	planesGroup->setName("All planes");
+
 	loadAirports();
 	loadPlanesList();
 	loadPlanesPoints(currentDateTime.asTimeStamp());
 
-	/* Load earth */
-	//osg::ref_ptr<osg::Node> globe = osgDB::readNodeFile("C:/GoogleMaps_TMS/tms2.earth");
-	osg::ref_ptr<osg::Node> globe = osgDB::readNodeFile("\\\\NIKKITTA\\GoogleMaps_TMS\\tms.earth");
-	//osg::ref_ptr<osg::Node> globe = osgDB::readNodeFile(PATH + "readymap.earth");
-	globe->setName("Earth");
-	mapNode = MapNode::get(globe);
-	LODBlending* effect = new LODBlending();
-	mapNode->getTerrainEngine()->addEffect(effect);
-
-	mapSRS = mapNode->getMapSRS();
-	geoSRS = mapSRS->getGeographicSRS();
+	planesGroup->setUpdateCallback(new MovePlanes);
 
 	/* Adding planes to group */
-	planesGroup = new osg::Group();
-	planesGroup->setName("All planes");
-	for (int i = 0; i < planesOnEarth.size(); i++)
-		planesGroup->addChild(planesOnEarth[i].get());
-	planesGroup->setUpdateCallback(new MovePlanes);
 
 	/* Adding sky */
 	sky = SkyNode::create(mapNode);
 	sky->setDateTime(currentDateTime);
 	sky->addChild(globe.get());
-	sky->setUpdateCallback(new MoveSun);
 	sky->setUpdateCallback(new UpdatePlanesInTheSky);
 
 	root = new osg::Group;
@@ -93,6 +89,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	/* Setting up Viewer */
 	viewer.setSceneData(root);
 	viewer.setUpViewOnSingleScreen(SCREEN_NUM);
+	//viewer.getCamera()->getOrCreateStateSet()->setGlobalDefaults();
 	viewer.getCamera()->setNearFarRatio(0.000001);
 	viewer.addEventHandler(new PickHandler);
 

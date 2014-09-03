@@ -25,3 +25,34 @@ void DrawFlightInfoThread::run()
 	messagesGrid->clearControls();
 	messagesGrid->setVisible(false);
 }
+
+void UpdatePlanesInTheSkyThread::run()
+{
+	clock_t begin = clock();
+	isUpdatingPlanesInTheSky = true;
+
+	/* Delete planes that have landed */
+	mMutex.lock();
+	for (int i = 0; i < justLandedPlanes.size(); i++)
+	{
+		planeCurrentIndex.remove(justLandedPlanes[i]);
+		planePoints.remove(justLandedPlanes[i]);
+		planesCurrentPosition.remove(justLandedPlanes[i]);
+		planesGroup->removeChild(planesOnEarth[justLandedPlanes[i]]);
+		planesOnEarth.remove(justLandedPlanes[i]);
+		planesNamesGroup->removeChild(justLandedPlanes[i]);
+		landedPlanes.push_back(justLandedPlanes[i]);
+	}
+	mMutex.unlock();
+	QVector<int>().swap(justLandedPlanes);
+	/***********************************/
+
+	loadPlanesPoints(timestamp);
+
+	isUpdatingPlanesInTheSky = false;
+
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	std::cout << "Background: " << elapsed_secs << std::endl;
+	file += "Background: " + QString::number(elapsed_secs) + "\n";
+}

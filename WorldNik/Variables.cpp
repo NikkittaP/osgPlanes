@@ -26,7 +26,7 @@ osg::ref_ptr<osgEarth::MapNode> mapNode;
 osg::ref_ptr<osg::Group> planesGroup;
 osg::ref_ptr<osg::Group> planesNamesGroup;
 osg::ref_ptr<osg::Group> root;
-std::vector<osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
+QHash<int, osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
 osgEarth::Util::SkyNode* sky;
 osgEarth::DateTime currentDateTime = osgEarth::DateTime("2011-07-01 00:00:00");
 osgEarth::Util::Controls::LabelControl* currentDateTimeLabel;
@@ -67,11 +67,14 @@ osgEarth::Util::Controls::CheckBoxControl* speedControlCheckBox_100;
 osgEarth::Util::Controls::CheckBoxControl* speedControlCheckBox_1000;
 
 DrawFlightInfoThread *drawFlightInfoThread;
+UpdatePlanesInTheSkyThread *updatePlanesInTheSkyThread;
+bool isUpdatingPlanesInTheSky;
 
 QHash<int, AirportData> airportsList;
+QMutex mMutex;
 QVector<int> planesInTheSky;
 QVector<int> justLandedPlanes;
-QList<int> landedPlanes;
+QVector<int> landedPlanes;
 QHash<int, FlightInfo> planesList;
 QHash<int, int> planeCurrentIndex;
 QHash<int, std::vector<FlightPoint>> planePoints;
@@ -83,3 +86,5 @@ QString file;
 //osg::ref_ptr<osg::Node> plane_high_ = osgDB::readNodeFile("D:/Progs/3DModels/A320-200/A320-200.osg.0,0,180.rot");
 //osg::ref_ptr<osg::Node> plane_high = osgDB::readNodeFile("D:/Progs/3DModels/cessna_simple.osg.0,0,180.rot");
 osg::ref_ptr<osg::Node> plane_high;
+
+QSqlDatabase db;

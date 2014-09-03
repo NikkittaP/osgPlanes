@@ -52,9 +52,7 @@ void loadPlanesPoints(double timestamp)
 
 			if (timestamp >= (flight.departureTime.asTimeStamp() - 300.0))
 			{
-				planeCurrentIndex.insert(flight_id, 0);
-
-				QSqlQuery query;
+				QSqlQuery query(db);
 				std::vector<FlightPoint> tmp;
 				query.prepare("SELECT second, latitude, longitude, altitude, psi, theta, gamma FROM flight_points WHERE flight_info_id = :id");
 				query.bindValue(":id", flight_id);
@@ -71,12 +69,18 @@ void loadPlanesPoints(double timestamp)
 
 					tmp.push_back(point);
 				}
-				planePoints.insert(flight_id, tmp);
-				planesCurrentPosition.insert(flight_id, planePoints[flight_id][0]);
+				if (tmp.size() != 0)
+				{
+					mMutex.lock();
+					planeCurrentIndex.insert(flight_id, 0);
+					planePoints.insert(flight_id, tmp);
+					planesCurrentPosition.insert(flight_id, planePoints[flight_id][0]);
 
-				addPlanesToEarth(flight_id);
+					addPlanesToEarth(flight_id);
 
-				planesInTheSky.push_back(flight_id);
+					planesInTheSky.push_back(flight_id);
+					mMutex.unlock();
+				}
 			}
 		}
 	}
@@ -91,15 +95,17 @@ void addPlanesToEarth(int flight_id)
 
 	osg::ref_ptr<osg::Node> plane_high_ = dynamic_cast<osg::Node*>(plane_high->clone(osg::CopyOp::DEEP_COPY_ALL));
 	style.getOrCreate<ModelSymbol>()->setModel(plane_high_);
-	planesOnEarth.push_back(new ModelNode(mapNode, style));
-	planesOnEarth[planesOnEarth.size()-1]->setName(planesList[flight_id].flight.toStdString());
-	planesOnEarth[planesOnEarth.size() - 1]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE));
+	planesOnEarth.insert(flight_id, new ModelNode(mapNode, style));
+	planesOnEarth[flight_id]->setName(planesList[flight_id].flight.toStdString());
+	planesOnEarth[flight_id]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE));
 
 	osg::ref_ptr<LabelNode> _lbl = new LabelNode(mapNode, GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE), planesList[flight_id].flight.toStdString(), labelStyle);
 	osg::ref_ptr<osg::Switch> _showHideLbl = new osg::Switch();
 	_showHideLbl->setName(planesList[flight_id].flight.toStdString());
 	_showHideLbl->addChild(_lbl);
 	planesNamesGroup->addChild(_showHideLbl);
+
+	planesGroup->addChild(planesOnEarth[flight_id].get());
 }
 
 /*void parseFlightFile()

@@ -12,4 +12,13 @@ protected:
 	int _id;
 };
 
+class UpdatePlanesInTheSkyThread : public OpenThreads::Thread
+{
+public:
+	UpdatePlanesInTheSkyThread(double _timestamp) : OpenThreads::Thread(), timestamp(_timestamp) {}
+	virtual void run();
+protected:
+	int timestamp;
+};
+
 #endif
