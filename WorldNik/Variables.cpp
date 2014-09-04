@@ -37,7 +37,7 @@ osg::Camera* verticalProfileHUD;
 
 bool isFollowingPlane = false;
 double prev_distance_to_earth;
-int scale;
+int scale = 1;
 
 double _speed = 1;
 int _planeIndex = 0;
