@@ -34,7 +34,7 @@ void Initialize()
 		loadPlanesPoints(currentDateTime.asTimeStamp());
 		break;
 	case FILE_SOURCE:
-
+		parseFlightFile();
 		break;
 	}
 

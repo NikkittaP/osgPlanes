@@ -16,6 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		"You have selected: ";
 	int choice = 0;
 	std::cin >> choice;
+	std::cout << std::endl;
 
 	switch (choice)
 	{
@@ -24,6 +25,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		break;
 	case 1:
 		dataSource = FILE_SOURCE;
+		std::cout << "Number of planes to load: ";
+		std::cin >> numPlanesToGet;
+		std::cout << std::endl;
 		break;
 	}
 

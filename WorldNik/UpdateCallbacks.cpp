@@ -46,8 +46,6 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			}
 			else
 			{
-				/* Блок независящий от источника данных */
-
 				planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
 				planesCurrentPosition[flight_id].lat += (planePoints[flight_id][_idx + 1].lat - planePoints[flight_id][_idx].lat) / (10.0f * _denom);
 				planesCurrentPosition[flight_id].lon += (planePoints[flight_id][_idx + 1].lon - planePoints[flight_id][_idx].lon) / (10.0f * _denom);
@@ -78,6 +76,7 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 					LabelNode* _lbl = dynamic_cast<LabelNode*>(_switch->getChild(0));
 					_lbl->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
 				}
+
 				/***************************************************/
 
 				if (flight_id == _selectedPlane)
@@ -142,11 +141,10 @@ void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 	if ((clock() - _prev_sun_clock) / double(CLOCKS_PER_SEC) >= 1.0 / STEPS_PER_SECOND)
 	{
 		sky->setDateTime(currentDateTime);
-		//std::cout << "In the sky: " << planesInTheSky.size() << ";\t landed: " << landedPlanes.size() << std::endl;
 		_prev_sun_clock = clock();
 	}
 
-	if ((currentDateTime.asTimeStamp() - _prev_clock) >= 300.0)
+	if (dataSource==DB_SOURCE && (currentDateTime.asTimeStamp() - _prev_clock) >= 300.0)
 	{
 		double timestamp = currentDateTime.asTimeStamp();
 

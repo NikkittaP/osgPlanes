@@ -18,7 +18,7 @@ extern int STEPS_PER_SECOND;
 extern std::string PATH;
 extern unsigned int screenWidth, screenHeight, hudChartWidth, hudChartHeight;
 
-extern int numPlanes;
+extern int numPlanesToGet;
 /*
 extern std::vector<std::vector<float>> seconds;
 extern std::vector<std::vector<float>> lat;

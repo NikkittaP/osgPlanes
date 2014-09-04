@@ -8,16 +8,7 @@ int STEPS_PER_SECOND = 30;
 std::string PATH;
 unsigned int screenWidth, screenHeight, hudChartWidth, hudChartHeight = 200;
 
-int numPlanes;
-/*
-std::vector<std::vector<float>> seconds;
-std::vector<std::vector<float>> lat;
-std::vector<std::vector<float>> lon;
-std::vector<std::vector<float>> alt;
-std::vector<std::vector<float>> psi;
-std::vector<std::vector<float>> tetta;
-std::vector<std::vector<float>> gamma;*/
-//std::vector<float> planeT, planeLat, planeLon, planeAlt, planeTheta, planeGamma, planePsi;
+int numPlanesToGet;
 osg::ref_ptr<osg::Node> globe;
 const osgEarth::Util::SpatialReference* mapSRS;
 const osgEarth::Util::SpatialReference* geoSRS;

@@ -119,18 +119,16 @@ void addPlanesToEarth(int flight_id)
 	planesGroup->addChild(planesOnEarth[flight_id].get());
 }
 
-/*void parseFlightFile()
+void parseFlightFile()
 {
 	std::vector<std::string> files_list;
 	DIR *dir;
 	struct dirent *ent;
-	//if ((dir = opendir("D:/Progs/OpenGL/OSG/my/2014-06-09/WorldNik/x64/Release/trajectories/")) != NULL) {
 	std::string _path = PATH + "trajectories/";
 	int count = 0;
 	if ((dir = opendir(_path.c_str())) != NULL) {
 		while ((ent = readdir(dir)) != NULL) {
-			count++;
-			if (count == 100)
+			if (count == numPlanesToGet)
 				break;
 			std::string file = ent->d_name;
 			if (file != "." && file != "..")
@@ -138,32 +136,22 @@ void addPlanesToEarth(int flight_id)
 				std::string path = _path;
 				path.append(file);
 				files_list.push_back(path);
+				count++;
 			}
 		}
 		closedir(dir);
 	}
 
-	//for (int i = 0; i < 900; i++)
-	//files_list.push_back("D:/Progs/OpenGL/OSG/my/2014-06-09/WorldNik/x64/Release/traj_full_" + ZeroPadNumber(i) + ".txt");
-	//	files_list.push_back("D:/Progs/OpenGL/OSG/my/2014-06-09/WorldNik/x64/Release/traj" + ZeroPadNumber(i) + ".txt");
-
-	numPlanes = files_list.size();
-
-	for (int i = 0; i < numPlanes; i++)
+	for (int i = 0; i < files_list.size(); i++)
 	{
-		std::vector<float> _a;
-		std::vector<float> _seconds;
-		std::vector<float> _lat;
-		std::vector<float> _lon;
-		std::vector<float> _alt;
-		std::vector<float> _psi;
-		std::vector<float> _tetta;
-		std::vector<float> _gamma;
-
 		std::ifstream infile(files_list[i]);
 		std::string line;
+
+		std::vector<FlightPoint> tmp;
+
 		while (std::getline(infile, line))
 		{
+			FlightPoint point;
 			std::string arr[17];
 			int i = 0;
 			std::stringstream ssin(line);
@@ -171,39 +159,35 @@ void addPlanesToEarth(int flight_id)
 				ssin >> arr[i];
 				++i;
 			}
-			_seconds.push_back(atof(arr[0].c_str()));
-			_lat.push_back(atof(arr[5].c_str()));
-			_lon.push_back(atof(arr[6].c_str()));
-			_alt.push_back(atof(arr[1].c_str())*0.3048);
-			double psi = atof(arr[3].c_str());
-			//if (psi>180)
-			//	psi -= 360;
-			_psi.push_back(psi);
-			_tetta.push_back(atof(arr[15].c_str()));
-			_gamma.push_back(atof(arr[16].c_str()));
-		}
-		if (_seconds.size() == 0)
-			numPlanes--;
-		else
-		{
-			seconds.push_back(_seconds);
-			lat.push_back(_lat);
-			lon.push_back(_lon);
-			alt.push_back(_alt);
-			psi.push_back(_psi);
-			tetta.push_back(_tetta);
-			gamma.push_back(_gamma);
 
-			planeT.push_back(_seconds[_planeIndex]);
-			planeLat.push_back(_lat[_planeIndex]);
-			planeLon.push_back(_lon[_planeIndex]);
-			planeAlt.push_back(_alt[_planeIndex]);
-			planeTheta.push_back(_tetta[_planeIndex]);
-			planeGamma.push_back(_gamma[_planeIndex]);
-			planePsi.push_back(_psi[_planeIndex]);
+			point.seconds = atof(arr[0].c_str());
+			point.lat = atof(arr[5].c_str());
+			point.lon = atof(arr[6].c_str());
+			point.alt = atof(arr[1].c_str())*0.3048;
+			point.psi = atof(arr[3].c_str());
+			point.theta = atof(arr[15].c_str());
+			point.gamma = atof(arr[16].c_str());
+
+			tmp.push_back(point);
+		}
+		if (tmp.size() != 0)
+		{
+			FlightInfo flight;
+			flight.aType = "A320";
+			flight.flight = "Plane " + QString::number(i);
+
+			planesList.insert(i, flight);
+
+			planeCurrentIndex.insert(i, 0);
+			planePoints.insert(i, tmp);
+			planesCurrentPosition.insert(i, planePoints[i][0]);
+
+			addPlanesToEarth(i);
+
+			planesInTheSky.push_back(i);
 		}
 	}
-}*/
+}
 
 void DrawFlightLines(int flight_id)
 {
