@@ -1,6 +1,7 @@
 #ifndef Data_HEADER
 #define Data_HEADER
 
+void connectToDB();
 void loadAirports();
 void loadPlanesList();
 void loadPlanesPoints(double timestamp);

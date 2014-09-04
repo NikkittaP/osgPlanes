@@ -5,6 +5,14 @@
 #include "NodeVisitors.h"
 #include "BackgroundThreads.h"
 
+enum DataSource
+{
+	DB_SOURCE,
+	FILE_SOURCE
+};
+
+extern DataSource dataSource;
+
 const int SCREEN_NUM = 1;
 extern int STEPS_PER_SECOND;
 extern std::string PATH;
@@ -21,6 +29,7 @@ extern std::vector<std::vector<float>> tetta;
 extern std::vector<std::vector<float>> gamma;
 */
 //extern std::vector<float> planeT, planeLat, planeLon, planeAlt, planeTheta, planeGamma, planePsi;
+extern osg::ref_ptr<osg::Node> globe;
 extern const osgEarth::Util::SpatialReference* mapSRS;
 extern const osgEarth::Util::SpatialReference* geoSRS;
 

@@ -519,6 +519,7 @@
   <ItemGroup>
     <ClCompile Include="BackgroundThreads.cpp" />
     <ClCompile Include="Chart.cpp" />
+    <ClCompile Include="Initialize.cpp" />
     <ClCompile Include="OverlayPanels.cpp" />
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="EventHandlers.cpp" />
@@ -533,6 +534,9 @@
     <ClCompile Include="UpdateCallbacks.cpp" />
     <ClCompile Include="Variables.cpp" />
     <ClCompile Include="WorldNik.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Initialize.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
