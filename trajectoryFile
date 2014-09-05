@@ -11,16 +11,22 @@ Description:
   1 - alt - altitude of the plane in ft (m/0.3048)
   2 - TAS - true air speed of the plane in m/s
   3 - psi - aircraft heading in degrees [0;360]
-- 4 - currentWPT  - current waypoint number (if you have a flight plan)
+  4 - currentWPT  - current waypoint number. Switch from 3 to 4 means that plane passed 3rd waypoint. Each distinct figure is a waypoint.
   5 - Lat - latitude of the plane in degrees [-90;90]
   6 - Lon - longitude of the plane in degrees [-180;180]
-- 7 - Vx  - plane speed in the projection on the axis X
-- 8 - Vy  - plane speed in the projection on the axis Y
+- 7 - Vx  - plane speed in the projection on the axis X in m/s
+- 8 - Vy  - plane speed in the projection on the axis Y in m/s
 - 9 - windW - module of the wind velocity vector in m/s
 - 10  - windPsi - heading of the wind velocity vector in degrees [0;360]
   11  - M - Mach number of the plane
-  12  - GS  - ground speed
-- 13  - dPsi  - not needed
-  14  - alpha -  angle of atack
-  15  - theta - 
-  16  - gamma - 
+- 12  - GS  - ground speed
+- 13  - dPsi  - not needed (internal parameter for trajectory calculation)
+  14  - alpha - angle of attack in degrees
+  15  - theta - pitch angle in degrees
+  16  - gamma - roll angle in degrees
+
+Parameters marked with '-' in the beginning are not planned to be used. Just use 0 to fill them.
+Currently osgPlanes uses 7 parameters:
+  t;
+  alt, Lat, Lon - to position plane on Earth;
+  alpha, theta, gamma - to rotate plane;
