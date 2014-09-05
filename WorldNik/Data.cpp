@@ -106,16 +106,17 @@ void addPlanesToEarth(int flight_id)
 	osg::ref_ptr<osg::Node> plane_high_ = dynamic_cast<osg::Node*>(plane_high->clone(osg::CopyOp::DEEP_COPY_ALL));
 	style.getOrCreate<ModelSymbol>()->setModel(plane_high_);
 	planesOnEarth.insert(flight_id, new ModelNode(mapNode, style));
-	planesOnEarth[flight_id]->setName(planesList[flight_id].flight.toStdString());
+	planesOnEarth[flight_id]->setName("Flight " + std::to_string(flight_id));
 	planesOnEarth[flight_id]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE));
 	planesOnEarth[flight_id]->setScale(osg::Vec3(scale, scale, scale));
 
 	osg::ref_ptr<LabelNode> _lbl = new LabelNode(mapNode, GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_RELATIVE), planesList[flight_id].flight.toStdString(), labelStyle);
 	osg::ref_ptr<osg::Switch> _showHideLbl = new osg::Switch();
-	_showHideLbl->setName(planesList[flight_id].flight.toStdString());
+	_showHideLbl->setName("Label " + std::to_string(flight_id));
 	_showHideLbl->addChild(_lbl);
-	planesNamesGroup->addChild(_showHideLbl);
+	labelsOnEarth.insert(flight_id, _showHideLbl);
 
+	planesNamesGroup->addChild(labelsOnEarth[flight_id].get());
 	planesGroup->addChild(planesOnEarth[flight_id].get());
 }
 

@@ -28,17 +28,8 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 		std::string prepend;
 		for (int i = 0; i < nodePath.size(); i++)
 		{
-			/* Writing node tree to console */
-			prepend = "";
-			for (int k = 0; k < i; k++)
-				prepend.append(" ");
-			std::cout << prepend << nodePath[i]->libraryName() << "::" << nodePath[i]->className();
-			if (trim(nodePath[i]->getName()) != "")
-				std::cout << " || Name: " << nodePath[i]->getName();
-			std::cout << std::endl;
-
 			/* Selecting plane */
-			if (nodePath[i]->getName().find("Plane") != std::string::npos) {
+			if (nodePath[i]->getName().find("Flight") != std::string::npos) {
 				int _newID;
 				if (nodePath[i]->getName().find("Label") != std::string::npos)
 				{
@@ -46,7 +37,7 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 				}
 				else {
 					std::string str = nodePath[i]->getName();
-					str.erase(0, 6);
+					str.erase(0, 7);
 					_newID = std::stoi(str);
 				}
 				if (_selectedPlane != _newID)
@@ -96,7 +87,6 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 				//e_manip->setTetherNode(0L);
 			}
 		}
-		std::cout << "***********************************" << std::endl;
 	}
 	return(false);
 }

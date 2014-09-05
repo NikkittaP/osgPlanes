@@ -19,16 +19,6 @@ extern std::string PATH;
 extern unsigned int screenWidth, screenHeight, hudChartWidth, hudChartHeight;
 
 extern int numPlanesToGet;
-/*
-extern std::vector<std::vector<float>> seconds;
-extern std::vector<std::vector<float>> lat;
-extern std::vector<std::vector<float>> lon;
-extern std::vector<std::vector<float>> alt;
-extern std::vector<std::vector<float>> psi;
-extern std::vector<std::vector<float>> tetta;
-extern std::vector<std::vector<float>> gamma;
-*/
-//extern std::vector<float> planeT, planeLat, planeLon, planeAlt, planeTheta, planeGamma, planePsi;
 extern osg::ref_ptr<osg::Node> globe;
 extern const osgEarth::Util::SpatialReference* mapSRS;
 extern const osgEarth::Util::SpatialReference* geoSRS;
@@ -42,6 +32,7 @@ extern osg::ref_ptr<osg::Group> planesGroup;
 extern osg::ref_ptr<osg::Group> planesNamesGroup;
 extern osg::ref_ptr<osg::Group> root;
 extern QHash<int, osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
+extern QHash<int, osg::ref_ptr<osg::Switch>> labelsOnEarth;
 extern osgEarth::Util::SkyNode* sky;
 extern osgEarth::DateTime currentDateTime;
 extern osgEarth::Util::Controls::LabelControl* currentDateTimeLabel;

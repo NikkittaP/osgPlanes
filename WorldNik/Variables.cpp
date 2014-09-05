@@ -22,6 +22,7 @@ osg::ref_ptr<osg::Group> planesGroup;
 osg::ref_ptr<osg::Group> planesNamesGroup;
 osg::ref_ptr<osg::Group> root;
 QHash<int, osg::ref_ptr<osgEarth::Annotation::ModelNode>> planesOnEarth;
+QHash<int, osg::ref_ptr<osg::Switch>> labelsOnEarth;
 osgEarth::Util::SkyNode* sky;
 osgEarth::DateTime currentDateTime = osgEarth::DateTime("2011-07-01 00:00:00");
 osgEarth::Util::Controls::LabelControl* currentDateTimeLabel;
