@@ -31,6 +31,7 @@ void Initialize()
 		connectToDB();
 		loadAirports();
 		loadPlanesList();
+		loadFlightPlan();
 		loadPlanesPoints(currentDateTime.asTimeStamp());
 		break;
 	case FILE_SOURCE:
@@ -39,14 +40,21 @@ void Initialize()
 	}
 
 	root = new osg::Group;
+	root->setDataVariance(osg::Object::DYNAMIC);
 	root->addChild(sky);
 	root->addChild(planesGroup.get());
 	root->addChild(planesNamesGroup.get());
 
+	visualTrajectories = new osg::Group();
+	visualTrajectories->setDataVariance(osg::Object::DYNAMIC);
+	root->addChild(visualTrajectories.get());
+
 	sky->attach(&viewer);
 
-	osgUtil::Optimizer optimizer;
-	optimizer.optimize(root);
+	viewer.setThreadingModel(osgViewer::ViewerBase::ThreadPerCamera);
+
+	//osgUtil::Optimizer optimizer;
+	//optimizer.optimize(root);
 
 	InitViewer();
 	InitPanels();

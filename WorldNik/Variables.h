@@ -26,6 +26,7 @@ extern const osgEarth::Util::SpatialReference* geoSRS;
 extern osgEarth::Annotation::FeatureNode* pathNode;
 extern osgEarth::Annotation::FeatureNode* pathNode_surface;
 extern osg::ref_ptr<osg::Group> connections;
+extern osg::ref_ptr<osg::Group> visualTrajectories;
 
 extern osg::ref_ptr<osgEarth::MapNode> mapNode;
 extern osg::ref_ptr<osg::Group> planesGroup;
@@ -107,12 +108,21 @@ struct FlightInfo {
 	osgEarth::DateTime arrivalTime;
 };
 
+struct FlightPlan {
+	int WPTnum;
+	QString WPTname;
+	double lat;
+	double lon;
+	double alt;
+};
+
 extern QHash<int, AirportData> airportsList;
 extern QMutex mMutex;
 extern QVector<int> planesInTheSky;
 extern QVector<int> justLandedPlanes;
 extern QVector<int> landedPlanes;
 extern QHash<int, FlightInfo> planesList;
+extern QHash<int, std::vector<FlightPlan>> flightPlans;
 extern QHash<int, int> planeCurrentIndex;
 extern QHash<int, std::vector<FlightPoint>> planePoints;
 

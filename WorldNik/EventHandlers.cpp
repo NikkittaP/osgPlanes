@@ -44,14 +44,12 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 				{
 					if (_selectedPlane != -1)
 					{
-						osg::Switch* _switch = dynamic_cast<osg::Switch*>(planesNamesGroup->getChild(_selectedPlane));
-						_switch->setValue(0, true);
+						labelsOnEarth[_selectedPlane]->setValue(0, true);
 						planesOnEarth[_selectedPlane]->accept(whiteColor);
 					}
 					_selectedPlane = _newID;
 
-					osg::Switch* _switch = dynamic_cast<osg::Switch*>(planesNamesGroup->getChild(_selectedPlane));
-					_switch->setValue(0, false);
+					labelsOnEarth[_selectedPlane]->setValue(0, false);
 
 					createPlaneInfoPanel(_selectedPlane);
 
@@ -61,8 +59,6 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 						isFollowingPlane = false;
 					}
 
-					//if (drawFlightInfoThread && drawFlightInfoThread->isRunning())
-					//drawFlightInfoThread->cancel();
 					drawFlightInfoThread = new DrawFlightInfoThread(_selectedPlane);
 					drawFlightInfoThread->setCancelModeDeferred();
 					drawFlightInfoThread->start();
@@ -81,9 +77,9 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 				_selectedPlane = -1;
 				root->removeChild(verticalProfileHUD);
 				verticalProfileHUD = NULL;
-				root->removeChild(connections);
-				root->removeChild(pathNode);
-				root->removeChild(pathNode_surface);
+				//root->removeChild(connections);
+				//root->removeChild(pathNode);
+				//root->removeChild(pathNode_surface);
 				//e_manip->setTetherNode(0L);
 			}
 		}

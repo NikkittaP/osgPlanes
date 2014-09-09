@@ -9,6 +9,7 @@ public:
 	DrawFlightInfoThread(int _sel) : OpenThreads::Thread(), _id(_sel) {}
 	virtual void run();
 protected:
+	OpenThreads::Mutex _mutex;
 	int _id;
 };
 

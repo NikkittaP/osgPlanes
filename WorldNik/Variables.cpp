@@ -16,6 +16,7 @@ const osgEarth::Util::SpatialReference* geoSRS;
 osgEarth::Annotation::FeatureNode* pathNode;
 osgEarth::Annotation::FeatureNode* pathNode_surface;
 osg::ref_ptr<osg::Group> connections;
+osg::ref_ptr<osg::Group> visualTrajectories;
 
 osg::ref_ptr<osgEarth::MapNode> mapNode;
 osg::ref_ptr<osg::Group> planesGroup;
@@ -72,6 +73,7 @@ QVector<int> planesInTheSky;
 QVector<int> justLandedPlanes;
 QVector<int> landedPlanes;
 QHash<int, FlightInfo> planesList;
+QHash<int, std::vector<FlightPlan>> flightPlans;
 QHash<int, int> planeCurrentIndex;
 QHash<int, std::vector<FlightPoint>> planePoints;
 

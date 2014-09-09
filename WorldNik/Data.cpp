@@ -48,6 +48,34 @@ void loadPlanesList()
 		planesList.insert(query.value(0).toInt(), flight);
 	}
 }
+void loadFlightPlan()
+{
+	QHashIterator<int, FlightInfo> iter(planesList);
+	while (iter.hasNext())
+	{
+		iter.next();
+		int flight_id = iter.key();
+		QSqlQuery query(db);
+		std::vector<FlightPlan> tmp;
+		query.prepare("SELECT wpt_num, name, latitude, longitude, altitude FROM flight_plans WHERE flight_info_id = :id");
+		query.bindValue(":id", flight_id);
+		query.exec();
+		while (query.next()) {
+			FlightPlan fpln;
+			fpln.WPTnum = query.value(0).toInt();
+			fpln.WPTname = query.value(1).toString();
+			fpln.lat = query.value(2).toFloat();
+			fpln.lon = query.value(3).toFloat();
+			fpln.alt = query.value(4).toFloat();
+
+			tmp.push_back(fpln);
+		}
+		if (tmp.size() != 0)
+		{
+			flightPlans.insert(flight_id, tmp);
+		}
+	}
+}
 
 void loadPlanesPoints(double timestamp)
 {
@@ -149,7 +177,8 @@ void parseFlightFile()
 		std::string line;
 
 		std::vector<FlightPoint> tmp;
-
+		std::vector<FlightPlan> tmp2;
+		int prev_wpt = -1;
 		while (std::getline(infile, line))
 		{
 			FlightPoint point;
@@ -169,6 +198,19 @@ void parseFlightFile()
 			point.theta = atof(arr[15].c_str());
 			point.gamma = atof(arr[16].c_str());
 
+			if (atoi(arr[4].c_str()) != prev_wpt)
+			{
+				FlightPlan fpln;
+				fpln.WPTnum = tmp2.size();
+				fpln.WPTname = "WPT_" + QString::number(tmp2.size());
+				fpln.lat = point.lat;
+				fpln.lon = point.lon;
+				fpln.alt = point.alt;
+
+				tmp2.push_back(fpln);
+				prev_wpt = atoi(arr[4].c_str());
+			}
+
 			tmp.push_back(point);
 		}
 		if (tmp.size() != 0)
@@ -176,71 +218,60 @@ void parseFlightFile()
 			FlightInfo flight;
 			flight.aType = "A320";
 			flight.flight = "Plane " + QString::number(i);
-
 			planesList.insert(i, flight);
-
 			planeCurrentIndex.insert(i, 0);
 			planePoints.insert(i, tmp);
 			planesCurrentPosition.insert(i, planePoints[i][0]);
-
 			addPlanesToEarth(i);
-
 			planesInTheSky.push_back(i);
+
+			FlightPlan fpln;
+			fpln.WPTnum = tmp2.size();
+			fpln.WPTname = "WPT_" + QString::number(tmp2.size());
+			fpln.lat = tmp[tmp.size() - 1].lat;
+			fpln.lon = tmp[tmp.size() - 1].lon;
+			fpln.alt = tmp[tmp.size() - 1].alt;
+			tmp2.push_back(fpln);
+			flightPlans.insert(i, tmp2);
 		}
 	}
 }
 
-void DrawFlightLines(int flight_id)
+void DrawFlightLine(int flight_id)
 {
-	if (flight_id != -1)
+	visualTrajectories->removeChildren(0, visualTrajectories->getNumChildren());
+
+	Geometry* path = new LineString();
+	Geometry* path_surface = new LineString();
+	for (int i = 0; i < flightPlans[flight_id].size(); i++)
 	{
-		root->removeChild(connections);
-		root->removeChild(pathNode);
-		root->removeChild(pathNode_surface);
+		path->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, flightPlans[flight_id][i].alt));
+		path_surface->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, 0));
 
-		connections = new osg::Group();
-		Geometry* path = new LineString();
-		Geometry* path_surface = new LineString();
-		int k = 0;
-		for (int i = 0; i < planePoints[flight_id].size(); i++)
-		{
-			if (k % 1 == 0 || i == planePoints[flight_id].size() - 1)
-			{
-				path->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
-				path_surface->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
-			}
-			if (k % 50 == 0 || i == planePoints[flight_id].size() - 1)
-			{
-				Geometry* connection = new LineString();
-				connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
-				connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
-				Style connectionStyle;
-				connectionStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
-				connectionStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
-				connectionStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_NONE;
-				Feature* connectionFeature = new Feature(connection, geoSRS, connectionStyle);
-				FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
-				connections->addChild(connectionNode);
-			}
-			k++;
-		}
+		Geometry* connection = new LineString();
+		connection->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, flightPlans[flight_id][i].alt));
+		connection->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, 0));
+		Style connectionStyle;
+		connectionStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
+		connectionStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
+		connectionStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_NONE;
+		Feature* connectionFeature = new Feature(connection, geoSRS, connectionStyle);
+		FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
 
-		Style pathStyle, pathStyle_surface;
-		pathStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
-		pathStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
-		pathStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_ABSOLUTE;
-		pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
-		pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
-		pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->clamping() = osgEarth::Symbology::AltitudeSymbol::CLAMP_TO_TERRAIN;
-		pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->technique() = osgEarth::Symbology::AltitudeSymbol::TECHNIQUE_GPU;
-
-		Feature* pathFeature = new Feature(path, geoSRS, pathStyle);
-		Feature* pathFeature_surface = new Feature(path_surface, geoSRS, pathStyle_surface);
-		pathNode = new FeatureNode(mapNode, pathFeature);
-		pathNode_surface = new FeatureNode(mapNode, pathFeature_surface);
-
-		root->addChild(connections);
-		root->addChild(pathNode);
-		root->addChild(pathNode_surface);
+		visualTrajectories->addChild(connectionNode);
 	}
+
+	Style pathStyle, pathStyle_surface;
+	pathStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
+	pathStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
+	pathStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_ABSOLUTE;
+	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
+	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
+	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->clamping() = osgEarth::Symbology::AltitudeSymbol::CLAMP_TO_TERRAIN;
+	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->technique() = osgEarth::Symbology::AltitudeSymbol::TECHNIQUE_GPU;
+
+	Feature* pathFeature = new Feature(path, geoSRS, pathStyle);
+	Feature* pathFeature_surface = new Feature(path_surface, geoSRS, pathStyle_surface);
+	visualTrajectories->addChild(new FeatureNode(mapNode, pathFeature));
+	visualTrajectories->addChild(new FeatureNode(mapNode, pathFeature_surface));
 }

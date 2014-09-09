@@ -60,11 +60,11 @@ osg::Node* createOverlayPanels(osgViewer::View* view)
 	canvasOverlay->addControl(planeInfoGrid);
 	return canvasOverlay;
 }
-void createPlaneInfoPanel(int id)
+void createPlaneInfoPanel(int flight_id)
 {
 	planeInfoGrid->setVisible(true);
 
-	titleLabel = new Controls::LabelControl(planesOnEarth[id]->getName());
+	titleLabel = new Controls::LabelControl(planesList[flight_id].flight.toStdString());
 	titleLabel->setHorizAlign(Controls::Control::ALIGN_RIGHT);
 	titleLabel->setPadding(20);
 	titleLabel->setFontSize(24);

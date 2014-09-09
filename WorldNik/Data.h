@@ -4,11 +4,12 @@
 void connectToDB();
 void loadAirports();
 void loadPlanesList();
+void loadFlightPlan();
 void loadPlanesPoints(double timestamp);
 void addPlanesToEarth(int flight_id);
 
 void parseFlightFile();
 
-void DrawFlightLines(int id);
+void DrawFlightLine(int flight_id);
 
 #endif
