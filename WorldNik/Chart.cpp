@@ -9,17 +9,23 @@ using namespace osgEarth::Util;
 
 void ShowVerticalProfile(int flight_id)
 {
-	/*_time = seconds[id];
-	H_whole = alt[id];
-	lat_whole = lat[id];
-	lon_whole = lon[id];
-
+	visualChart->removeChildren(0, visualChart->getNumChildren());
+	_time.clear();
+	H_whole.clear();
+	lat_whole.clear();
+	lon_whole.clear();
+	for (int i = 0; i < planePoints[flight_id].size(); i++)
+	{
+		_time.push_back(planePoints[flight_id][i].seconds);
+		H_whole.push_back(planePoints[flight_id][i].alt);
+		lat_whole.push_back(planePoints[flight_id][i].lat);
+		lon_whole.push_back(planePoints[flight_id][i].lon);
+	}
 	getScreenSize();
 	hudChartWidth = screenWidth*0.8;
 	hudChartHeight = 200;
 	verticalProfileHUD = createHUD(screenWidth, screenHeight, hudChartWidth, hudChartHeight, CENTER_BOTTOM);
-	root->addChild(verticalProfileHUD);
-	*/
+	visualChart->addChild(verticalProfileHUD);
 }
 
 void normalizeData(int hudWidth, int hudHeight)

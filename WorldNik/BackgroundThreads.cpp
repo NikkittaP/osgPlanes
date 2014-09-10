@@ -16,11 +16,10 @@ void DrawFlightInfoThread::run()
 	messagesGrid->setControl(0, 0, lbl);
 
 	isShowingChart = false;
-	//OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
 	DrawFlightLine(_id);
 	lbl->setText("Loading vertical profile ...");
-	//ShowVerticalProfile(_id);
-	//isShowingChart = true;
+	ShowVerticalProfile(_id);
+	isShowingChart = true;
 
 	lbl->setText("Done");
 	messagesGrid->clearControls();

@@ -17,6 +17,7 @@ osgEarth::Annotation::FeatureNode* pathNode;
 osgEarth::Annotation::FeatureNode* pathNode_surface;
 osg::ref_ptr<osg::Group> connections;
 osg::ref_ptr<osg::Group> visualTrajectories;
+osg::ref_ptr<osg::Group> visualChart;
 
 osg::ref_ptr<osgEarth::MapNode> mapNode;
 osg::ref_ptr<osg::Group> planesGroup;

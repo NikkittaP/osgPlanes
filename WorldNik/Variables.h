@@ -27,6 +27,7 @@ extern osgEarth::Annotation::FeatureNode* pathNode;
 extern osgEarth::Annotation::FeatureNode* pathNode_surface;
 extern osg::ref_ptr<osg::Group> connections;
 extern osg::ref_ptr<osg::Group> visualTrajectories;
+extern osg::ref_ptr<osg::Group> visualChart;
 
 extern osg::ref_ptr<osgEarth::MapNode> mapNode;
 extern osg::ref_ptr<osg::Group> planesGroup;

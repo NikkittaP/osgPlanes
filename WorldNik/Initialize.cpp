@@ -49,6 +49,10 @@ void Initialize()
 	visualTrajectories->setDataVariance(osg::Object::DYNAMIC);
 	root->addChild(visualTrajectories.get());
 
+	visualChart = new osg::Group();
+	visualChart->setDataVariance(osg::Object::DYNAMIC);
+	root->addChild(visualChart.get());
+
 	sky->attach(&viewer);
 
 	viewer.setThreadingModel(osgViewer::ViewerBase::ThreadPerCamera);
@@ -68,7 +72,7 @@ void InitModels()
 void InitEarth()
 {
 	/* Load earth */
-	globe = osgDB::readNodeFile("\\\\NIKKITTA\\GoogleMaps_TMS\\tms.earth");
+	globe = osgDB::readNodeFile("\\\\NIKKITTA\\GoogleMaps_TMS\\tms_low.earth");
 	globe->setName("Earth");
 	mapNode = MapNode::get(globe);
 	LODBlending* effect = new LODBlending();
