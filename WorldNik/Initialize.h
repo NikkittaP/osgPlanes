@@ -2,6 +2,7 @@
 #define Initialize_HEADER
 
 void Initialize();
+void ParseConfigFile();
 void InitModels();
 void InitEarth();
 void InitAuxiliary();

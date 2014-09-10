@@ -4,6 +4,7 @@
 
 DataSource dataSource;
 
+std::string EARTH_FILE;
 int STEPS_PER_SECOND = 30;
 std::string PATH;
 unsigned int screenWidth, screenHeight, hudChartWidth, hudChartHeight = 200;

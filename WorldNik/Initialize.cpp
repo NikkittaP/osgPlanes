@@ -12,6 +12,7 @@ using namespace osgEarth::Util;
 
 void Initialize()
 {
+	ParseConfigFile();
 	InitAuxiliary();
 	InitEarth();
 	InitSky();
@@ -63,6 +64,13 @@ void Initialize()
 	InitViewer();
 	InitPanels();
 }
+void ParseConfigFile()
+{
+	std::ifstream infile(PATH + "config.cfg");
+	std::string line;
+	std::getline(infile, line);
+	EARTH_FILE = line;
+}
 void InitModels()
 {
 	/* Load plane */
@@ -72,7 +80,7 @@ void InitModels()
 void InitEarth()
 {
 	/* Load earth */
-	globe = osgDB::readNodeFile("\\\\NIKKITTA\\GoogleMaps_TMS\\tms_low.earth");
+	globe = osgDB::readNodeFile(EARTH_FILE);
 	globe->setName("Earth");
 	mapNode = MapNode::get(globe);
 	LODBlending* effect = new LODBlending();
