@@ -59,9 +59,12 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 						isFollowingPlane = false;
 					}
 
-					drawFlightInfoThread = new DrawFlightInfoThread(_selectedPlane);
-					drawFlightInfoThread->setCancelModeDeferred();
-					drawFlightInfoThread->start();
+					if (drawFlightInfoThread == NULL || !drawFlightInfoThread->isRunning())
+					{
+						drawFlightInfoThread = new DrawFlightInfoThread(_selectedPlane);
+						drawFlightInfoThread->setCancelModeDeferred();
+						drawFlightInfoThread->start();
+					}
 
 					planesOnEarth[_selectedPlane]->accept(redColor);
 					//LocalizedNode* node = dynamic_cast<LocalizedNode*>(nodePath[i]);
@@ -71,16 +74,14 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 			else if (nodePath[i]->getName() == "Earth" && (ea.getModKeyMask()&osgGA::GUIEventAdapter::MODKEY_CTRL))
 			{
 				isShowingChart = false;
-				osg::Switch* _switch = dynamic_cast<osg::Switch*>(planesNamesGroup->getChild(_selectedPlane));
-				_switch->setValue(0, true);
+				labelsOnEarth[_selectedPlane]->setValue(0, true);
 				planesOnEarth[_selectedPlane]->accept(whiteColor);
 				_selectedPlane = -1;
-				root->removeChild(verticalProfileHUD);
-				verticalProfileHUD = NULL;
-				//root->removeChild(connections);
-				//root->removeChild(pathNode);
-				//root->removeChild(pathNode_surface);
-				//e_manip->setTetherNode(0L);
+				visualChart->removeChildren(0, visualChart->getNumChildren());
+				visualTrajectories->removeChildren(0, visualTrajectories->getNumChildren());
+				planeInfoGrid->clearControls();
+				planeInfoGrid->setVisible(false);
+				e_manip->setTetherNode(0L);
 			}
 		}
 	}
@@ -89,10 +90,20 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapt
 
 void SpeedHandler::onValueChanged(Controls::Control* control, float value) {
 	if (value >= 1)
+	{
 		_speed = round(value);
+		if (value == 10)
+		{
+			DBUpdateInterval = 1200.0;
+			DBUpdateIntervalUpdated = true;
+		}
+	}
 	else
 		_speed = round(value * 10) / 10.0;
 	speedControlLabel->setText(std::to_string(_speed).substr(0, 5) + "x");
+	speedControlCheckBox_100->setValue(false);
+	speedControlCheckBox_1000->setValue(false);
+	InterpolationIndexVariable = 1;
 }
 
 void SpeedHandler::onClick(osgEarth::Util::Controls::Control* control)
@@ -108,12 +119,17 @@ void SpeedHandler::onClick(osgEarth::Util::Controls::Control* control)
 			{
 				_speed = 100;
 				speedControlCheckBox_1000->setValue(false);
+				InterpolationIndexVariable = 1;
+				DBUpdateInterval = 3600.0;
 			}
 			else if (checkBox->getName() == "1000x")
 			{
 				_speed = 1000;
 				speedControlCheckBox_100->setValue(false);
+				InterpolationIndexVariable = 10;
+				DBUpdateInterval = 7200.0;
 			}
+			DBUpdateIntervalUpdated = true;
 			speedControlLabel->setText(std::to_string(_speed).substr(0, 5) + "x");
 		}
 	}

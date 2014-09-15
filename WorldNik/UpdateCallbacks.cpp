@@ -32,13 +32,13 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			if (flight_id < 0)
 				break;
 			int _idx = planeCurrentIndex[flight_id];
-			if ((_idx + 1) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + 1].seconds)
+			if ((_idx + InterpolationIndexVariable) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + InterpolationIndexVariable].seconds)
 			{
-				planeCurrentIndex[flight_id]++;
-				_idx++;
+				planeCurrentIndex[flight_id] += InterpolationIndexVariable;
+				_idx += InterpolationIndexVariable;
 			}
 
-			if ((_idx + 1) >= planePoints[flight_id].size())
+			if ((_idx + InterpolationIndexVariable) >= planePoints[flight_id].size())
 			{
 				justLandedPlanes.push_back(flight_id);
 				it = planesInTheSky.erase(it);
@@ -46,12 +46,12 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			else
 			{
 				planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
-				planesCurrentPosition[flight_id].lat += (planePoints[flight_id][_idx + 1].lat - planePoints[flight_id][_idx].lat) / (10.0f * _denom);
-				planesCurrentPosition[flight_id].lon += (planePoints[flight_id][_idx + 1].lon - planePoints[flight_id][_idx].lon) / (10.0f * _denom);
-				planesCurrentPosition[flight_id].alt += (planePoints[flight_id][_idx + 1].alt - planePoints[flight_id][_idx].alt) / (10.0f * _denom);
-				planesCurrentPosition[flight_id].theta += (planePoints[flight_id][_idx + 1].theta - planePoints[flight_id][_idx].theta) / (10.0f * _denom);
-				planesCurrentPosition[flight_id].gamma += (planePoints[flight_id][_idx + 1].gamma - planePoints[flight_id][_idx].gamma) / (10.0f * _denom);
-				planesCurrentPosition[flight_id].psi += (planePoints[flight_id][_idx + 1].psi - planePoints[flight_id][_idx].psi) / (10.0f * _denom);
+				planesCurrentPosition[flight_id].lat += (planePoints[flight_id][_idx + InterpolationIndexVariable].lat - planePoints[flight_id][_idx].lat) / (InterpolationIndexVariable*10.0f * _denom);
+				planesCurrentPosition[flight_id].lon += (planePoints[flight_id][_idx + InterpolationIndexVariable].lon - planePoints[flight_id][_idx].lon) / (InterpolationIndexVariable*10.0f * _denom);
+				planesCurrentPosition[flight_id].alt += (planePoints[flight_id][_idx + InterpolationIndexVariable].alt - planePoints[flight_id][_idx].alt) / (InterpolationIndexVariable*10.0f * _denom);
+				planesCurrentPosition[flight_id].theta += (planePoints[flight_id][_idx + InterpolationIndexVariable].theta - planePoints[flight_id][_idx].theta) / (InterpolationIndexVariable*10.0f * _denom);
+				planesCurrentPosition[flight_id].gamma += (planePoints[flight_id][_idx + InterpolationIndexVariable].gamma - planePoints[flight_id][_idx].gamma) / (InterpolationIndexVariable*10.0f * _denom);
+				planesCurrentPosition[flight_id].psi += (planePoints[flight_id][_idx + InterpolationIndexVariable].psi - planePoints[flight_id][_idx].psi) / (InterpolationIndexVariable*10.0f * _denom);
 
 				planesOnEarth[flight_id]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
 				osg::Quat quat(
@@ -70,7 +70,7 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 				{
 					updatePlaneInfoPanel(flight_id);
 
-					if (isShowingChart)
+					if (isShowingChart && !drawFlightInfoThread->isRunning())
 					{
 						chartGeode->removeDrawable(chartPlanePosition);
 						chartPlanePosition = new osg::ShapeDrawable;
@@ -125,7 +125,7 @@ void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 		_prev_sun_clock = clock();
 	}
 
-	if (dataSource == DB_SOURCE && (currentDateTime.asTimeStamp() - _prev_clock) >= 300.0)
+	if (dataSource == DB_SOURCE && (DBUpdateIntervalUpdated || (currentDateTime.asTimeStamp() - _prev_clock) >= DBUpdateInterval))
 	{
 		double timestamp = currentDateTime.asTimeStamp();
 
@@ -134,6 +134,9 @@ void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 		updatePlanesInTheSkyThread->start();
 
 		_prev_clock = currentDateTime.asTimeStamp();
+
+		if (DBUpdateIntervalUpdated)
+			DBUpdateIntervalUpdated = false;
 	}
 
 	traverse(node, nv);

@@ -88,7 +88,7 @@ void loadPlanesPoints(double timestamp)
 		{
 			FlightInfo flight = iter.value();
 
-			if (timestamp >= (flight.departureTime.asTimeStamp() - 300.0))
+			if (timestamp >= (flight.departureTime.asTimeStamp() - DBUpdateInterval))
 			{
 				QSqlQuery query(db);
 				std::vector<FlightPoint> tmp;

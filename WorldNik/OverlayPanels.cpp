@@ -12,12 +12,14 @@ Controls::LabelControl* altLabel;
 Controls::LabelControl* psiLabel;
 Controls::LabelControl* gammaLabel;
 Controls::LabelControl* thetaLabel;
+Controls::LabelControl* timeLabel;
 Controls::LabelControl* latLabelValue;
 Controls::LabelControl* lonLabelValue;
 Controls::LabelControl* altLabelValue;
 Controls::LabelControl* psiLabelValue;
 Controls::LabelControl* gammaLabelValue;
 Controls::LabelControl* thetaLabelValue;
+Controls::LabelControl* timeLabelValue;
 
 osg::Node* createOverlayPanels(osgViewer::View* view)
 {
@@ -112,6 +114,13 @@ void createPlaneInfoPanel(int flight_id)
 	thetaLabelValue->setHorizAlign(Controls::Control::ALIGN_RIGHT);
 	planeInfoGrid->setControl(1, 6, thetaLabelValue);
 
+	timeLabel = new Controls::LabelControl("Time: ");
+	timeLabel->setHorizAlign(Controls::Control::ALIGN_LEFT);
+	planeInfoGrid->setControl(0, 7, timeLabel);
+	timeLabelValue = new Controls::LabelControl("");
+	timeLabelValue->setHorizAlign(Controls::Control::ALIGN_RIGHT);
+	planeInfoGrid->setControl(1, 7, timeLabelValue);
+
 	planeInfoGrid->setControl(0, 15, new Controls::LabelControl("Follow plane"));
 	Controls::CheckBoxControl* checkBox = new Controls::CheckBoxControl(false, new Toggle("followPlane"));
 	checkBox->setHorizAlign(Controls::Control::ALIGN_CENTER);
@@ -125,4 +134,5 @@ void updatePlaneInfoPanel(int flight_id)
 	psiLabelValue->setText(std::to_string(((int)round(planesCurrentPosition[flight_id].psi * 100)) / 100.0));
 	gammaLabelValue->setText(std::to_string(((int)round(planesCurrentPosition[flight_id].gamma * 100)) / 100.0));
 	thetaLabelValue->setText(std::to_string(((int)round(planesCurrentPosition[flight_id].theta * 100)) / 100.0));
+	timeLabelValue->setText(osgEarth::DateTime(1309478400.0 + planesCurrentPosition[flight_id].seconds).asISO8601());
 }

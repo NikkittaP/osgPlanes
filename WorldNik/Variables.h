@@ -13,7 +13,7 @@ enum DataSource
 
 extern DataSource dataSource;
 
-const int SCREEN_NUM = 0;
+const int SCREEN_NUM = 1;
 extern std::string EARTH_FILE;
 extern int STEPS_PER_SECOND;
 extern std::string PATH;
@@ -49,7 +49,9 @@ extern double prev_distance_to_earth;
 extern int scale;
 
 extern double _speed;
-//extern int _planeIndex;
+extern bool DBUpdateIntervalUpdated;
+extern double DBUpdateInterval;
+extern int InterpolationIndexVariable;
 extern int _selectedPlane;
 extern clock_t start, end;
 

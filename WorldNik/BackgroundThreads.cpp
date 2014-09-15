@@ -8,8 +8,6 @@ using namespace osgEarth::Util;
 
 void DrawFlightInfoThread::run()
 {
-	root->removeChild(verticalProfileHUD);
-	verticalProfileHUD = NULL;
 	messagesGrid->setVisible(true);
 	Controls::LabelControl* lbl = new Controls::LabelControl("Loading flight line ...");
 	lbl->setVertAlign(Controls::Control::ALIGN_BOTTOM);

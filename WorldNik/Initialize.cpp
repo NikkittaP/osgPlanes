@@ -20,9 +20,11 @@ void Initialize()
 	InitModels();
 
 	planesNamesGroup = new osg::Group();
+	planesNamesGroup->setDataVariance(osg::Object::DYNAMIC);
 	Decluttering::setEnabled(planesNamesGroup->getOrCreateStateSet(), true);
 
 	planesGroup = new osg::Group();
+	planesGroup->setDataVariance(osg::Object::DYNAMIC);
 	planesGroup->setName("All planes");
 	planesGroup->setUpdateCallback(new MovePlanes);
 
@@ -74,7 +76,7 @@ void ParseConfigFile()
 void InitModels()
 {
 	/* Load plane */
-	plane_high = osgDB::readNodeFile(PATH + "plane.osg");
+	plane_high = osgDB::readNodeFile(PATH + "my_plane.osg");
 	plane_high->accept(whiteColor);
 }
 void InitEarth()
@@ -128,6 +130,7 @@ void InitPanels()
 	speedControlLabel = new Controls::LabelControl("1.00x");
 	speedControlLabel->setVertAlign(Controls::Control::ALIGN_CENTER);
 	commonControlsGrid->setControl(2, 0, speedControlLabel);
+
 
 	currentDateTimeLabel = new Controls::LabelControl(currentDateTime.asISO8601());
 	currentDateTimeLabel->setVertAlign(Controls::Control::ALIGN_CENTER);

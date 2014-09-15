@@ -39,7 +39,9 @@ double prev_distance_to_earth;
 int scale = 1;
 
 double _speed = 1;
-int _planeIndex = 0;
+bool DBUpdateIntervalUpdated = false;
+double DBUpdateInterval = 300.0;
+int InterpolationIndexVariable = 1;
 int _selectedPlane = -1;
 clock_t start, end;
 
