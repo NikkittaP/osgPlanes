@@ -13,7 +13,7 @@ enum DataSource
 
 extern DataSource dataSource;
 
-const int SCREEN_NUM = 1;
+const int SCREEN_NUM = 0;
 extern std::string EARTH_FILE;
 extern int STEPS_PER_SECOND;
 extern std::string PATH;
@@ -26,7 +26,6 @@ extern const osgEarth::Util::SpatialReference* geoSRS;
 
 extern osgEarth::Annotation::FeatureNode* pathNode;
 extern osgEarth::Annotation::FeatureNode* pathNode_surface;
-extern osg::ref_ptr<osg::Group> connections;
 extern osg::ref_ptr<osg::Group> visualTrajectories;
 extern osg::ref_ptr<osg::Group> visualChart;
 
@@ -49,6 +48,7 @@ extern double prev_distance_to_earth;
 extern int scale;
 
 extern double _speed;
+extern bool isPlanesAdded;
 extern bool DBUpdateIntervalUpdated;
 extern double DBUpdateInterval;
 extern int InterpolationIndexVariable;
@@ -62,11 +62,11 @@ extern std::vector<float> HNorm;
 extern double _chartMaxHeight, _chartMaxTime;
 extern double XunitsInPixel, YunitsInPixel;
 extern osg::Sphere* planeAltitudeSphere;
-extern osgText::Text* planeAltitudeText;
+extern osg::ref_ptr<osgText::Text> planeAltitudeText;
 extern osg::ref_ptr<osg::ShapeDrawable> chartPlanePosition;
 extern bool isShowingChart;
 
-extern osg::Geode* chartGeode;
+extern osg::ref_ptr<osg::Geode> chartGeode;
 
 extern osgEarth::Util::Controls::ControlCanvas* canvasOverlay;
 extern osgEarth::Util::Controls::Grid* commonControlsGrid;

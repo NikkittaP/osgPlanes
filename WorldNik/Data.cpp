@@ -144,8 +144,9 @@ void addPlanesToEarth(int flight_id)
 	_showHideLbl->addChild(_lbl);
 	labelsOnEarth.insert(flight_id, _showHideLbl);
 
-	planesNamesGroup->addChild(labelsOnEarth[flight_id].get());
-	planesGroup->addChild(planesOnEarth[flight_id].get());
+	isPlanesAdded = true;
+	//planesNamesGroup->addChild(labelsOnEarth[flight_id].get());
+	//planesGroup->addChild(planesOnEarth[flight_id].get());
 }
 
 void parseFlightFile()

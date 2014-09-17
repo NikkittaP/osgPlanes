@@ -26,25 +26,6 @@ void DrawFlightInfoThread::run()
 
 void UpdatePlanesInTheSkyThread::run()
 {
-	isUpdatingPlanesInTheSky = true;
-
-	/* Delete planes that have landed */
-	mMutex.lock();
-	for (int i = 0; i < justLandedPlanes.size(); i++)
-	{
-		planeCurrentIndex.remove(justLandedPlanes[i]);
-		planePoints.remove(justLandedPlanes[i]);
-		planesCurrentPosition.remove(justLandedPlanes[i]);
-		planesGroup->removeChild(planesOnEarth[justLandedPlanes[i]]);
-		planesOnEarth.remove(justLandedPlanes[i]);
-		planesNamesGroup->removeChild(justLandedPlanes[i]);
-		labelsOnEarth.remove(justLandedPlanes[i]);
-		landedPlanes.push_back(justLandedPlanes[i]);
-	}
-	mMutex.unlock();
-	QVector<int>().swap(justLandedPlanes);
-	/***********************************/
-
 	loadPlanesPoints(timestamp);
 
 	isUpdatingPlanesInTheSky = false;

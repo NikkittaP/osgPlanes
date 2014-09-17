@@ -16,7 +16,6 @@ const osgEarth::Util::SpatialReference* geoSRS;
 
 osgEarth::Annotation::FeatureNode* pathNode;
 osgEarth::Annotation::FeatureNode* pathNode_surface;
-osg::ref_ptr<osg::Group> connections;
 osg::ref_ptr<osg::Group> visualTrajectories;
 osg::ref_ptr<osg::Group> visualChart;
 
@@ -39,6 +38,7 @@ double prev_distance_to_earth;
 int scale = 1;
 
 double _speed = 1;
+bool isPlanesAdded = false;
 bool DBUpdateIntervalUpdated = false;
 double DBUpdateInterval = 300.0;
 int InterpolationIndexVariable = 1;
@@ -52,11 +52,11 @@ std::vector<float> HNorm;
 double _chartMaxHeight, _chartMaxTime;
 double XunitsInPixel, YunitsInPixel;
 osg::Sphere* planeAltitudeSphere;
-osgText::Text* planeAltitudeText;
+osg::ref_ptr<osgText::Text> planeAltitudeText;
 osg::ref_ptr<osg::ShapeDrawable> chartPlanePosition;
 bool isShowingChart = false;
 
-osg::Geode* chartGeode;
+osg::ref_ptr<osg::Geode> chartGeode;
 
 osgEarth::Util::Controls::ControlCanvas* canvasOverlay;
 osgEarth::Util::Controls::Grid* commonControlsGrid = NULL;

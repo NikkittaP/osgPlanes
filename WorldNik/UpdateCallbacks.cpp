@@ -12,6 +12,19 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 {
 	osg::Group* planes = dynamic_cast<osg::Group*>(node);
 
+	if (isPlanesAdded)
+	{
+		for (int i = 0; i < planesInTheSky.size(); i++)
+		{
+			if (!planesGroup->containsNode(planesOnEarth[planesInTheSky[i]].get()))
+			{
+				planesNamesGroup->addChild(labelsOnEarth[planesInTheSky[i]].get());
+				planesGroup->addChild(planesOnEarth[planesInTheSky[i]].get());
+			}
+		}
+		isPlanesAdded = false;
+	}
+
 	if (planes && (clock() - _prev_clock) / double(CLOCKS_PER_SEC) >= 1.0 / STEPS_PER_SECOND)
 	{
 		mMutex.lock();
@@ -105,12 +118,14 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 		else if (scale >1000)
 			scale = 1000;
 
+		mMutex.lock();
 		osg::ref_ptr<osgEarth::Annotation::ModelNode> planeOnEarth;
 		foreach(planeOnEarth, planesOnEarth)
 		{
 			if (planeOnEarth != NULL)
 				planeOnEarth->setScale(osg::Vec3(scale, scale, scale));
 		}
+		mMutex.unlock();
 	}
 	prev_distance_to_earth = e_manip->getDistance();
 
@@ -129,9 +144,30 @@ void UpdatePlanesInTheSky::operator()(osg::Node* node, osg::NodeVisitor* nv)
 	{
 		double timestamp = currentDateTime.asTimeStamp();
 
-		updatePlanesInTheSkyThread = new UpdatePlanesInTheSkyThread(timestamp);
-		updatePlanesInTheSkyThread->setCancelModeDeferred();
-		updatePlanesInTheSkyThread->start();
+		if (updatePlanesInTheSkyThread == NULL || !updatePlanesInTheSkyThread->isRunning())
+		{
+			isUpdatingPlanesInTheSky = true;
+			/* Delete planes that have landed */
+			mMutex.lock();
+			for (int i = 0; i < justLandedPlanes.size(); i++)
+			{
+				planeCurrentIndex.remove(justLandedPlanes[i]);
+				planePoints.remove(justLandedPlanes[i]);
+				planesCurrentPosition.remove(justLandedPlanes[i]);
+				planesGroup->removeChild(planesOnEarth[justLandedPlanes[i]]);
+				planesOnEarth.remove(justLandedPlanes[i]);
+				planesNamesGroup->removeChild(labelsOnEarth[justLandedPlanes[i]]);
+				labelsOnEarth.remove(justLandedPlanes[i]);
+				landedPlanes.push_back(justLandedPlanes[i]);
+			}
+			mMutex.unlock();
+			QVector<int>().swap(justLandedPlanes);
+			/***********************************/
+
+			updatePlanesInTheSkyThread = new UpdatePlanesInTheSkyThread(timestamp);
+			updatePlanesInTheSkyThread->setCancelModeDeferred();
+			updatePlanesInTheSkyThread->start();
+		}
 
 		_prev_clock = currentDateTime.asTimeStamp();
 

@@ -249,12 +249,12 @@ osg::Camera* createHUD(int windowWidth, int windowHeight, int hudWidth, int hudH
 	planeAltitudeText->setFont(timesFont);
 	planeAltitudeText->setCharacterSize(18);
 	planeAltitudeText->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	chartGeode->addDrawable(planeAltitudeText);
+	chartGeode->addDrawable(planeAltitudeText.get());
 
 	osg::ref_ptr<osg::Group> chart = new osg::Group;
 	chart->addChild(getTicks(windowWidth, windowHeight, hudWidth, hudHeight, hudPosition, osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f)));
 	chart->addChild(geode_bg);
-	chart->addChild(chartGeode);
+	chart->addChild(chartGeode.get());
 	camera->addChild(chart);
 
 	return camera;
