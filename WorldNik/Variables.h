@@ -13,7 +13,7 @@ enum DataSource
 
 extern DataSource dataSource;
 
-const int SCREEN_NUM = 0;
+const int SCREEN_NUM = 1;
 extern std::string EARTH_FILE;
 extern int STEPS_PER_SECOND;
 extern std::string PATH;

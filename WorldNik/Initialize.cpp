@@ -58,7 +58,7 @@ void Initialize()
 
 	sky->attach(&viewer);
 
-	//viewer.setThreadingModel(osgViewer::ViewerBase::ThreadPerCamera);
+	viewer.setThreadingModel(osgViewer::ViewerBase::ThreadPerCamera);
 
 	//osgUtil::Optimizer optimizer;
 	//optimizer.optimize(root);

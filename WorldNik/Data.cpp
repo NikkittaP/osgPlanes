@@ -269,7 +269,7 @@ void DrawFlightLine(int flight_id)
 	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
 	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
 	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->clamping() = osgEarth::Symbology::AltitudeSymbol::CLAMP_TO_TERRAIN;
-	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->technique() = osgEarth::Symbology::AltitudeSymbol::TECHNIQUE_DRAPE;
+	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->technique() = osgEarth::Symbology::AltitudeSymbol::TECHNIQUE_GPU;
 
 	Feature* pathFeature = new Feature(path, geoSRS, pathStyle);
 	Feature* pathFeature_surface = new Feature(path_surface, geoSRS, pathStyle_surface);
