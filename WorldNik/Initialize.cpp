@@ -103,6 +103,7 @@ void InitSky()
 	sky = SkyNode::create(mapNode);
 	sky->setDateTime(currentDateTime);
 	sky->addChild(globe.get());
+	sky->getSunLight()->setAmbient(osg::Vec4(0.3, 0.3, 0.3, 1));
 	sky->setUpdateCallback(new UpdatePlanesInTheSky);
 }
 void InitOcean()
