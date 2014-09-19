@@ -88,7 +88,7 @@ void loadPlanesPoints(double timestamp)
 		{
 			FlightInfo flight = iter.value();
 
-			if (timestamp >= (flight.departureTime.asTimeStamp() - DBUpdateInterval))
+			if (timestamp < flight.arrivalTime.asTimeStamp() && timestamp >= (flight.departureTime.asTimeStamp() - DBUpdateInterval))
 			{
 				QSqlQuery query(db);
 				std::vector<FlightPoint> tmp;
@@ -112,7 +112,19 @@ void loadPlanesPoints(double timestamp)
 					mMutex.lock();
 					planeCurrentIndex.insert(flight_id, 0);
 					planePoints.insert(flight_id, tmp);
-					planesCurrentPosition.insert(flight_id, planePoints[flight_id][0]);
+					if (timestamp < flight.departureTime.asTimeStamp())
+						planesCurrentPosition.insert(flight_id, planePoints[flight_id][0]);
+					else
+					{
+						for (int i = 0; i < tmp.size(); i++)
+						{
+							if (timestamp == (flight.departureTime.asTimeStamp() + tmp[i].seconds))
+							{
+								planesCurrentPosition.insert(flight_id, planePoints[flight_id][i]);
+								break;
+							}
+						}
+					}
 
 					addPlanesToEarth(flight_id);
 
@@ -244,14 +256,14 @@ void DrawFlightLine(int flight_id)
 
 	Geometry* path = new LineString();
 	Geometry* path_surface = new LineString();
-	for (int i = 0; i < flightPlans[flight_id].size(); i++)
+	for (int i = 0; i < planePoints[flight_id].size(); i++)
 	{
-		path->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, flightPlans[flight_id][i].alt));
-		path_surface->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, 0));
+		path->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
+		path_surface->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
 
 		Geometry* connection = new LineString();
-		connection->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, flightPlans[flight_id][i].alt));
-		connection->push_back(osg::Vec3d(flightPlans[flight_id][i].lon, flightPlans[flight_id][i].lat, 0));
+		connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
+		connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
 		Style connectionStyle;
 		connectionStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
 		connectionStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
@@ -265,7 +277,7 @@ void DrawFlightLine(int flight_id)
 	Style pathStyle, pathStyle_surface;
 	pathStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
 	pathStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
-	pathStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_ABSOLUTE;
+	pathStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_RELATIVE_TO_TERRAIN;
 	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
 	pathStyle_surface.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
 	pathStyle_surface.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()->clamping() = osgEarth::Symbology::AltitudeSymbol::CLAMP_TO_TERRAIN;
