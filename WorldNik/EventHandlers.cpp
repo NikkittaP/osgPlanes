@@ -126,7 +126,7 @@ void SpeedHandler::onClick(osgEarth::Util::Controls::Control* control)
 			{
 				_speed = 1000;
 				speedControlCheckBox_100->setValue(false);
-				InterpolationIndexVariable = 10;
+				InterpolationIndexVariable = 1;
 				DBUpdateInterval = 7200.0;
 			}
 			DBUpdateIntervalUpdated = true;

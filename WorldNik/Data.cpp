@@ -254,24 +254,102 @@ void DrawFlightLine(int flight_id)
 {
 	visualTrajectories->removeChildren(0, visualTrajectories->getNumChildren());
 
+	Geometry* flightLine = new Polygon();
+	double r = 17.0;
+	double dR = r / 6371000.0;
+	double brng, lat1;
+	double _lat0, _lat1, _lon0, _lon1, _alt0, _alt1, _psi0, _psi1, _gamma0, _gamma1;
+	double _latc, _lonc, _altc, _psic, _gammac;
+	double n = 1;
+	for (int i = 0; i < planePoints[flight_id].size(); i++)
+	{
+		_lat0 = planePoints[flight_id][i].lat;
+		_lat1 = planePoints[flight_id][i + 1].lat;
+		_lon0 = planePoints[flight_id][i].lon;
+		_lon1 = planePoints[flight_id][i + 1].lon;
+		_psi0 = planePoints[flight_id][i].psi;
+		_psi1 = planePoints[flight_id][i + 1].psi;
+		_alt0 = planePoints[flight_id][i].alt;
+		_alt1 = planePoints[flight_id][i + 1].alt;
+		_gamma0 = planePoints[flight_id][i].gamma;
+		_gamma1 = planePoints[flight_id][i + 1].gamma;
+		for (int k = 0; k < n; k++)
+		{
+			_latc = _lat0 + k*(_lat1 - _lat0) / n;
+			_lonc = _lon0 + k*(_lon1 - _lon0) / n;
+			_psic = _psi0 + k*(_psi1 - _psi0) / n;
+			_altc = _alt0 + k*(_alt1 - _alt0) / n;
+			_gammac = _gamma0 + k*(_gamma1 - _gamma0) / n;
+			lat1 = _latc*osg::PI / 180.0;
+			brng = osg::PI*(_psic - 90) / 180.0;
+			double lat2 = asin(sin(lat1)*cos(dR) + cos(lat1)*sin(dR)* cos(brng));
+			//std::cout << _altc<<"     "<<_altc + r*sin(_gammac*osg::PI / 180.0) << std::endl;
+			flightLine->push_back(osg::Vec3d(
+				_lonc + atan2(sin(brng)*sin(dR)*cos(lat2), cos(dR) - sin(lat1)*sin(lat2))*180.0 / osg::PI,
+				lat2*180.0 / osg::PI,
+				_altc - r*sin(_gammac*osg::PI / 180.0)));
+		}
+	}
+	for (int i = planePoints[flight_id].size()-1; i > 0; i--)
+	{
+		_lat0 = planePoints[flight_id][i].lat;
+		_lat1 = planePoints[flight_id][i - 1].lat;
+		_lon0 = planePoints[flight_id][i].lon;
+		_lon1 = planePoints[flight_id][i - 1].lon;
+		_psi0 = planePoints[flight_id][i].psi;
+		_psi1 = planePoints[flight_id][i - 1].psi;
+		_alt0 = planePoints[flight_id][i].alt;
+		_alt1 = planePoints[flight_id][i - 1].alt;
+		_gamma0 = planePoints[flight_id][i].gamma;
+		_gamma1 = planePoints[flight_id][i - 1].gamma;
+		for (int k = 0; k < n; k++)
+		{
+			_latc = _lat0 - k*(_lat0 - _lat1) / n;
+			_lonc = _lon0 - k*(_lon0 - _lon1) / n;
+			_psic = _psi0 - k*(_psi0 - _psi1) / n;
+			_altc = _alt0 - k*(_alt0 - _alt1) / n;
+			_gammac = _gamma0 - k*(_gamma0 - _gamma1) / n;
+			lat1 = _latc*osg::PI / 180.0;
+			brng = osg::PI*(_psic + 90) / 180.0;
+			double lat2 = asin(sin(lat1)*cos(dR) + cos(lat1)*sin(dR)* cos(brng));
+			flightLine->push_back(osg::Vec3d(
+				_lonc + atan2(sin(brng)*sin(dR)*cos(lat2), cos(dR) - sin(lat1)*sin(lat2))*180.0 / osg::PI,
+				lat2*180.0 / osg::PI,
+				_altc - r*sin(_gammac*osg::PI / 180.0)));
+		}
+	}
+	Style flightLineStyle;
+	flightLineStyle.getOrCreate<PolygonSymbol>()->fill()->color() = osg::Vec4(42.0f / 255, 122.0f / 255, 171.0f / 255, 0.3f);
+	flightLineStyle.getOrCreate<PointSymbol>()->fill()->color() = osg::Vec4(205.0f / 255, 255.0f / 255, 255.0f / 255, 1.0f);
+	flightLineStyle.getOrCreate<PointSymbol>()->size() = 3.0f;
+	flightLineStyle.getOrCreate<LineSymbol>()->stroke()->color() = osg::Vec4(205.0f / 255, 255.0f / 255, 255.0f / 255, 1.0f);
+	flightLineStyle.getOrCreate<LineSymbol>()->stroke()->width() = 2.0f;
+	//flightLineStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_NONE;
+	Feature* connectionFeature = new Feature(flightLine, geoSRS, flightLineStyle);
+	FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
+	visualTrajectories->addChild(connectionNode);
+	
+	
+	
+	/*
 	Geometry* path = new LineString();
 	Geometry* path_surface = new LineString();
 	for (int i = 0; i < planePoints[flight_id].size(); i++)
 	{
-		path->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
-		path_surface->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
+	path->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
+	path_surface->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
 
-		Geometry* connection = new LineString();
-		connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
-		connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
-		Style connectionStyle;
-		connectionStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
-		connectionStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
-		connectionStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_NONE;
-		Feature* connectionFeature = new Feature(connection, geoSRS, connectionStyle);
-		FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
+	Geometry* connection = new LineString();
+	connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
+	connection->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, 0));
+	Style connectionStyle;
+	connectionStyle.getOrCreate<LineSymbol>()->stroke()->color() = Color::Yellow;
+	connectionStyle.getOrCreate<LineSymbol>()->stroke()->width() = 3.0f;
+	connectionStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_NONE;
+	Feature* connectionFeature = new Feature(connection, geoSRS, connectionStyle);
+	FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
 
-		visualTrajectories->addChild(connectionNode);
+	visualTrajectories->addChild(connectionNode);
 	}
 
 	Style pathStyle, pathStyle_surface;
@@ -289,4 +367,5 @@ void DrawFlightLine(int flight_id)
 	pathFeature_surface->geoInterp() = GEOINTERP_GREAT_CIRCLE;
 	visualTrajectories->addChild(new FeatureNode(mapNode, pathFeature));
 	visualTrajectories->addChild(new FeatureNode(mapNode, pathFeature_surface));
+	*/
 }

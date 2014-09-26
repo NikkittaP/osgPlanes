@@ -45,59 +45,87 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			if (flight_id < 0)
 				break;
 			int _idx = planeCurrentIndex[flight_id];
-			if ((_idx + InterpolationIndexVariable) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + InterpolationIndexVariable].seconds)
+
+			planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
+
+			while ((_idx + InterpolationIndexVariable) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + InterpolationIndexVariable].seconds)
 			{
 				planeCurrentIndex[flight_id] += InterpolationIndexVariable;
 				_idx += InterpolationIndexVariable;
 			}
+			//else if ((planePoints[flight_id][_idx + InterpolationIndexVariable] planesCurrentPosition[flight_id].seconds)
 
 			if ((_idx + InterpolationIndexVariable) >= planePoints[flight_id].size())
 			{
+				int size = planePoints[flight_id].size() - 1;
+				planesCurrentPosition[flight_id].seconds = planePoints[flight_id][size].seconds;
+				planesCurrentPosition[flight_id].lat = planePoints[flight_id][size].lat;
+				planesCurrentPosition[flight_id].lon = planePoints[flight_id][size].lon;
+				planesCurrentPosition[flight_id].alt = planePoints[flight_id][size].alt;
+				planesCurrentPosition[flight_id].theta = planePoints[flight_id][size].theta;
+				planesCurrentPosition[flight_id].gamma = planePoints[flight_id][size].gamma;
+				planesCurrentPosition[flight_id].psi = planePoints[flight_id][size].psi;
 				justLandedPlanes.push_back(flight_id);
 				it = planesInTheSky.erase(it);
 			}
 			else
 			{
-				planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
-				planesCurrentPosition[flight_id].lat += (planePoints[flight_id][_idx + InterpolationIndexVariable].lat - planePoints[flight_id][_idx].lat) / (InterpolationIndexVariable*10.0f * _denom);
-				planesCurrentPosition[flight_id].lon += (planePoints[flight_id][_idx + InterpolationIndexVariable].lon - planePoints[flight_id][_idx].lon) / (InterpolationIndexVariable*10.0f * _denom);
-				planesCurrentPosition[flight_id].alt += (planePoints[flight_id][_idx + InterpolationIndexVariable].alt - planePoints[flight_id][_idx].alt) / (InterpolationIndexVariable*10.0f * _denom);
-				planesCurrentPosition[flight_id].theta += (planePoints[flight_id][_idx + InterpolationIndexVariable].theta - planePoints[flight_id][_idx].theta) / (InterpolationIndexVariable*10.0f * _denom);
-				planesCurrentPosition[flight_id].gamma += (planePoints[flight_id][_idx + InterpolationIndexVariable].gamma - planePoints[flight_id][_idx].gamma) / (InterpolationIndexVariable*10.0f * _denom);
-				planesCurrentPosition[flight_id].psi += (planePoints[flight_id][_idx + InterpolationIndexVariable].psi - planePoints[flight_id][_idx].psi) / (InterpolationIndexVariable*10.0f * _denom);
-
-				planesOnEarth[flight_id]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
-				osg::Quat quat(
-					osg::PI*planesCurrentPosition[flight_id].theta / 180.0, osg::X_AXIS,
-					osg::PI*planesCurrentPosition[flight_id].gamma / 180.0, osg::Y_AXIS,
-					-osg::PI* planesCurrentPosition[flight_id].psi / 180.0, osg::Z_AXIS
-					);
-				planesOnEarth[flight_id]->setLocalRotation(quat);
-
-				LabelNode* _lbl = dynamic_cast<LabelNode*>(labelsOnEarth[flight_id]->getChild(0));
-				_lbl->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
-
-				/***************************************************/
-
-				if (flight_id == _selectedPlane)
-				{
-					updatePlaneInfoPanel(flight_id);
-
-					if (isShowingChart && !drawFlightInfoThread->isRunning())
-					{
-						chartGeode->removeDrawable(chartPlanePosition);
-						chartPlanePosition = new osg::ShapeDrawable;
-						planeAltitudeSphere = new osg::Sphere(osg::Vec3((screenWidth - hudChartWidth) / 2 + (planesCurrentPosition[flight_id].seconds / XunitsInPixel), (planesCurrentPosition[flight_id].alt / YunitsInPixel), 1), 5);
-						chartPlanePosition->setShape(planeAltitudeSphere);
-						chartPlanePosition->setColor(osg::Vec4(1, 0, 0, 1));
-						chartGeode->addDrawable(chartPlanePosition.get());
-
-						planeAltitudeText->setText(std::to_string((int)round(planesCurrentPosition[flight_id].alt)));
-						planeAltitudeText->setPosition(osg::Vec3((screenWidth - hudChartWidth) / 2 + (planesCurrentPosition[flight_id].seconds / XunitsInPixel) + 10, (planesCurrentPosition[flight_id].alt / YunitsInPixel) - 5, 0));
-					}
-				}
+				planesCurrentPosition[flight_id].lat = planePoints[flight_id][_idx].lat +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].lat - planePoints[flight_id][_idx].lat)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+				planesCurrentPosition[flight_id].lon = planePoints[flight_id][_idx].lon +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].lon - planePoints[flight_id][_idx].lon)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+				planesCurrentPosition[flight_id].alt = planePoints[flight_id][_idx].alt +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].alt - planePoints[flight_id][_idx].alt)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+				planesCurrentPosition[flight_id].theta = planePoints[flight_id][_idx].theta +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].theta - planePoints[flight_id][_idx].theta)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+				planesCurrentPosition[flight_id].gamma = planePoints[flight_id][_idx].gamma +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].gamma - planePoints[flight_id][_idx].gamma)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+				planesCurrentPosition[flight_id].psi = planePoints[flight_id][_idx].psi +
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].psi - planePoints[flight_id][_idx].psi)*
+					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
 
 				++it;
+			}
+			planesOnEarth[flight_id]->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
+			osg::Quat quat(
+				osg::PI*planesCurrentPosition[flight_id].theta / 180.0, osg::X_AXIS,
+				osg::PI*planesCurrentPosition[flight_id].gamma / 180.0, osg::Y_AXIS,
+				-osg::PI* planesCurrentPosition[flight_id].psi / 180.0, osg::Z_AXIS
+				);
+			planesOnEarth[flight_id]->setLocalRotation(quat);
+
+			LabelNode* _lbl = dynamic_cast<LabelNode*>(labelsOnEarth[flight_id]->getChild(0));
+			_lbl->setPosition(GeoPoint(geoSRS, planesCurrentPosition[flight_id].lon, planesCurrentPosition[flight_id].lat, planesCurrentPosition[flight_id].alt, ALTMODE_ABSOLUTE));
+
+			/***************************************************/
+
+			if (flight_id == _selectedPlane)
+			{
+				updatePlaneInfoPanel(flight_id);
+
+				if (isShowingChart && !drawFlightInfoThread->isRunning())
+				{
+					chartGeode->removeDrawable(chartPlanePosition);
+					chartPlanePosition = new osg::ShapeDrawable;
+					planeAltitudeSphere = new osg::Sphere(osg::Vec3((screenWidth - hudChartWidth) / 2 + (planesCurrentPosition[flight_id].seconds / XunitsInPixel), (planesCurrentPosition[flight_id].alt / YunitsInPixel), 1), 5);
+					chartPlanePosition->setShape(planeAltitudeSphere);
+					chartPlanePosition->setColor(osg::Vec4(1, 0, 0, 1));
+					chartGeode->addDrawable(chartPlanePosition.get());
+
+					planeAltitudeText->setText(std::to_string((int)round(planesCurrentPosition[flight_id].alt)));
+					planeAltitudeText->setPosition(osg::Vec3((screenWidth - hudChartWidth) / 2 + (planesCurrentPosition[flight_id].seconds / XunitsInPixel) + 10, (planesCurrentPosition[flight_id].alt / YunitsInPixel) - 5, 0));
+				}
 			}
 		}
 		mMutex.unlock();

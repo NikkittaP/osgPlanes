@@ -33,6 +33,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	Initialize();
 
+	osgEarth::Viewpoint view(-22.6055, 63.985, 500, -8.51114, -12.9368, 15678.1, geoSRS);
+	e_manip->setViewpoint(view, 1.0);
+
 	viewer.run();
 	return 0;
 }
