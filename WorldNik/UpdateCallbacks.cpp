@@ -58,13 +58,16 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			if ((_idx + InterpolationIndexVariable) >= planePoints[flight_id].size())
 			{
 				int size = planePoints[flight_id].size() - 1;
-				planesCurrentPosition[flight_id].seconds = planePoints[flight_id][size].seconds;
-				planesCurrentPosition[flight_id].lat = planePoints[flight_id][size].lat;
-				planesCurrentPosition[flight_id].lon = planePoints[flight_id][size].lon;
-				planesCurrentPosition[flight_id].alt = planePoints[flight_id][size].alt;
-				planesCurrentPosition[flight_id].theta = planePoints[flight_id][size].theta;
-				planesCurrentPosition[flight_id].gamma = planePoints[flight_id][size].gamma;
-				planesCurrentPosition[flight_id].psi = planePoints[flight_id][size].psi;
+				if (size != -1)
+				{
+					planesCurrentPosition[flight_id].seconds = planePoints[flight_id][size].seconds;
+					planesCurrentPosition[flight_id].lat = planePoints[flight_id][size].lat;
+					planesCurrentPosition[flight_id].lon = planePoints[flight_id][size].lon;
+					planesCurrentPosition[flight_id].alt = planePoints[flight_id][size].alt;
+					planesCurrentPosition[flight_id].theta = planePoints[flight_id][size].theta;
+					planesCurrentPosition[flight_id].gamma = planePoints[flight_id][size].gamma;
+					planesCurrentPosition[flight_id].psi = planePoints[flight_id][size].psi;
+				}
 				justLandedPlanes.push_back(flight_id);
 				it = planesInTheSky.erase(it);
 			}
@@ -132,30 +135,6 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 		_prev_clock = clock();
 	}
-
-	if (e_manip->getDistance() != prev_distance_to_earth)
-	{
-		if (e_manip->getViewpoint().getRange() < 15000)
-			viewer.getCamera()->setNearFarRatio(0.000001);
-		else
-			viewer.getCamera()->setNearFarRatio(0.0005);
-
-		scale = 1 + round((e_manip->getDistance() - 500) / 500);
-		if (scale < 1)
-			scale = 1;
-		else if (scale >1000)
-			scale = 1000;
-
-		mMutex.lock();
-		osg::ref_ptr<osgEarth::Annotation::ModelNode> planeOnEarth;
-		foreach(planeOnEarth, planesOnEarth)
-		{
-			if (planeOnEarth != NULL)
-				planeOnEarth->setScale(osg::Vec3(scale, scale, scale));
-		}
-		mMutex.unlock();
-	}
-	prev_distance_to_earth = e_manip->getDistance();
 
 	traverse(node, nv);
 }
