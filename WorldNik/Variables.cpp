@@ -41,7 +41,6 @@ double _speed = 1;
 bool isPlanesAdded = false;
 bool DBUpdateIntervalUpdated = false;
 double DBUpdateInterval = 300.0;
-int InterpolationIndexVariable = 1;
 int _selectedPlane = -1;
 clock_t start, end;
 

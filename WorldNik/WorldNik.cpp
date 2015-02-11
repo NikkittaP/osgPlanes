@@ -53,7 +53,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	int choice = 0;
 	std::cin >> choice;
 	std::cout << std::endl;
-
+	
 	switch (choice)
 	{
 	case 0:

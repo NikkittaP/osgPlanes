@@ -34,16 +34,18 @@
 #include <osg/ShapeDrawable>
 #include <osgUtil/Tessellator>
 
-#include <dirent.h>
-
 #include <osgEarth/ElevationQuery>
 #include <osgText/Text>
 #include <osgEarthUtil/Controls>
+
+#include <dirent.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <QtCore/QCoreApplication>
 #include <QtSQL/QtSQL>
+
+#include <osg/LineWidth>
 
 // TODO: reference additional headers your program requires here

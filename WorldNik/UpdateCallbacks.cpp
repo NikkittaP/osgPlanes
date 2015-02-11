@@ -48,14 +48,13 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 			planesCurrentPosition[flight_id].seconds += 1.0f / _denom;
 
-			while ((_idx + InterpolationIndexVariable) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + InterpolationIndexVariable].seconds)
+			while ((_idx + 1) < planePoints[flight_id].size() && planesCurrentPosition[flight_id].seconds >= planePoints[flight_id][_idx + 1].seconds)
 			{
-				planeCurrentIndex[flight_id] += InterpolationIndexVariable;
-				_idx += InterpolationIndexVariable;
+				planeCurrentIndex[flight_id] += 1;
+				_idx += 1;
 			}
-			//else if ((planePoints[flight_id][_idx + InterpolationIndexVariable] planesCurrentPosition[flight_id].seconds)
 
-			if ((_idx + InterpolationIndexVariable) >= planePoints[flight_id].size())
+			if ((_idx + 1) >= planePoints[flight_id].size())
 			{
 				int size = planePoints[flight_id].size() - 1;
 				if (size != -1)
@@ -73,30 +72,27 @@ void MovePlanes::operator()(osg::Node* node, osg::NodeVisitor* nv)
 			}
 			else
 			{
+				double dt = (planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
+					(planePoints[flight_id][_idx + 1].seconds - planePoints[flight_id][_idx].seconds);
+
 				planesCurrentPosition[flight_id].lat = planePoints[flight_id][_idx].lat +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].lat - planePoints[flight_id][_idx].lat)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].lat - planePoints[flight_id][_idx].lat)*
+					dt;
 				planesCurrentPosition[flight_id].lon = planePoints[flight_id][_idx].lon +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].lon - planePoints[flight_id][_idx].lon)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].lon - planePoints[flight_id][_idx].lon)*
+					dt;
 				planesCurrentPosition[flight_id].alt = planePoints[flight_id][_idx].alt +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].alt - planePoints[flight_id][_idx].alt)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].alt - planePoints[flight_id][_idx].alt)*
+					dt;
 				planesCurrentPosition[flight_id].theta = planePoints[flight_id][_idx].theta +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].theta - planePoints[flight_id][_idx].theta)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].theta - planePoints[flight_id][_idx].theta)*
+					dt;
 				planesCurrentPosition[flight_id].gamma = planePoints[flight_id][_idx].gamma +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].gamma - planePoints[flight_id][_idx].gamma)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].gamma - planePoints[flight_id][_idx].gamma)*
+					dt;
 				planesCurrentPosition[flight_id].psi = planePoints[flight_id][_idx].psi +
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].psi - planePoints[flight_id][_idx].psi)*
-					(planesCurrentPosition[flight_id].seconds - planePoints[flight_id][_idx].seconds) /
-					(planePoints[flight_id][_idx + InterpolationIndexVariable].seconds - planePoints[flight_id][_idx].seconds);
+					(planePoints[flight_id][_idx + 1].psi - planePoints[flight_id][_idx].psi)*
+					dt;
 
 				++it;
 			}

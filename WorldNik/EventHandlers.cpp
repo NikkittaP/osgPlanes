@@ -103,7 +103,6 @@ void SpeedHandler::onValueChanged(Controls::Control* control, float value) {
 	speedControlLabel->setText(std::to_string(_speed).substr(0, 5) + "x");
 	speedControlCheckBox_100->setValue(false);
 	speedControlCheckBox_1000->setValue(false);
-	InterpolationIndexVariable = 1;
 }
 
 void SpeedHandler::onClick(osgEarth::Util::Controls::Control* control)
@@ -119,14 +118,12 @@ void SpeedHandler::onClick(osgEarth::Util::Controls::Control* control)
 			{
 				_speed = 100;
 				speedControlCheckBox_1000->setValue(false);
-				InterpolationIndexVariable = 1;
 				DBUpdateInterval = 3600.0;
 			}
 			else if (checkBox->getName() == "1000x")
 			{
 				_speed = 1000;
 				speedControlCheckBox_100->setValue(false);
-				InterpolationIndexVariable = 1;
 				DBUpdateInterval = 7200.0;
 			}
 			DBUpdateIntervalUpdated = true;

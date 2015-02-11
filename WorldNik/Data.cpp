@@ -8,6 +8,9 @@ using namespace osgEarth::Util;
 
 void connectToDB()
 {
+	//int argc = 1;
+	//char* buf[] = { "" };
+	//QCoreApplication a(argc, buf);
 	db = QSqlDatabase::addDatabase("QMYSQL");
 	db.setHostName("localhost");
 	db.setDatabaseName("planes");
@@ -353,18 +356,60 @@ void bspline(int n, int t, osg::Vec3dArray *control, osg::Vec3dArray *output)
 	delete[]u;
 }
 
+static const char* vertSource = {
+	"#version 140\n"
+	"uniform  Transformation {\n"
+	"	mat4 projection_matrix;\n"
+	"	mat4 modelview_matrix;\n"
+	"};\n"
+
+	"in vec3 vertex;\n"
+	
+	"void main(void) {\n"
+	"	gl_Position = projection_matrix * modelview_matrix * vec4(vertex, 1.0);\n"
+	"}\n"
+};
+static const char* geomSource = {
+	"#version 120\n"
+	"#extension GL_EXT_geometry_shader4 : enable\n"
+	
+	"uniform int segments;\n"
+	
+	"void main(void)\n"
+	"{\n"
+	"	float delta = 1.0 / float(segments);\n"
+	"	vec4 v;\n"
+	"	for ( int i=0; i<=segments; ++i )\n"
+	"	{\n"
+	"		float t = delta * float(i);\n"
+	"		float t2 = t * t;\n"
+	"		float one_minus_t = 1.0 - t;\n"
+	"		float one_minus_t2 = one_minus_t * one_minus_t;\n"
+	"		v = gl_PositionIn[0] * one_minus_t2 * one_minus_t + \n"
+	"			gl_PositionIn[1] * 3.0 * t * one_minus_t2 +\n"
+	"			gl_PositionIn[2] * 3.0 * t2 * one_minus_t +\n"
+	"			gl_PositionIn[3] * t2 * t;\n"
+	"		gl_Position = v;\n"
+	"		EmitVertex();\n"
+	"	}\n"
+	"	EndPrimitive();\n"
+	"}\n"
+};
+
 void DrawFlightLine(int flight_id)
 {
 	visualTrajectories->removeChildren(0, visualTrajectories->getNumChildren());
 
-	Geometry* flightLine = new Polygon();
+	osg::ref_ptr<osg::Geometry> flightLine = new osg::Geometry();
 
 	double r = 17.0;
 	double dR = r / 6371000.0;
 	double brng;
 	double _lat, _lon, _alt, _psi, _gamma;
 	double n = 3;
-	osg::Vec3dArray* control = new osg::Vec3dArray();
+
+	/* Forward */
+	osg::ref_ptr<osg::Vec3dArray> control = new osg::Vec3dArray();
 	osg::Vec3d target_vec;
 	for (int i = 0; i < planePoints[flight_id].size() - 1; i++)
 	{
@@ -384,9 +429,9 @@ void DrawFlightLine(int flight_id)
 			_alt + r*tan(_gamma*osg::PI / 180.0),
 			target_vec.x(), target_vec.y(), target_vec.z());
 		control->push_back(target_vec);
-
 	}
-	osg::Vec3dArray* spline = new osg::Vec3dArray(control->size() * n);
+
+	/*osg::Vec3dArray* spline = new osg::Vec3dArray(control->size() * n);
 	bspline(control->size() - 1, n, control, spline);
 	for (int i = 0; i < spline->size() - 1; i++)
 	{
@@ -394,9 +439,10 @@ void DrawFlightLine(int flight_id)
 		double lat, lon, alt;
 		mapNode->getMap()->getSRS()->getEllipsoid()->convertXYZToLatLongHeight(src_vec.x(), src_vec.y(), src_vec.z(), lat, lon, alt);
 		flightLine->push_back(osg::Vec3d(osg::RadiansToDegrees(lon), osg::RadiansToDegrees(lat), alt));
-	}
+	}*/
 
-	control = new osg::Vec3dArray();
+	/* Backward */
+	//control = new osg::Vec3dArray();
 	for (int i = planePoints[flight_id].size() - 1; i > 0; i--)
 	{
 		_lat = planePoints[flight_id][i].lat;
@@ -416,7 +462,32 @@ void DrawFlightLine(int flight_id)
 			target_vec.x(), target_vec.y(), target_vec.z());
 		control->push_back(target_vec);
 	}
-	spline = new osg::Vec3dArray(control->size() * n);
+
+	flightLine->setVertexArray(control.get());
+	flightLine->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, control->size()));
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(flightLine.get());
+
+	int segments = n * control->size() / 2;
+	osg::ref_ptr<osg::Program> program = new osg::Program;
+	program->addShader(new osg::Shader(osg::Shader::VERTEX, vertSource));
+	program->addShader(new osg::Shader(osg::Shader::GEOMETRY, geomSource));
+	program->setParameter(GL_GEOMETRY_VERTICES_OUT, segments*2 + 1);
+	program->setParameter(GL_GEOMETRY_INPUT_TYPE, GL_POLYGON);
+	program->setParameter(GL_GEOMETRY_OUTPUT_TYPE, GL_POLYGON);
+
+	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth;
+	lineWidth->setWidth(2.0f);
+
+	osg::StateSet* stateset = geode->getOrCreateStateSet();
+	stateset->setAttributeAndModes(program.get());
+	stateset->setAttribute(lineWidth.get());
+	stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	stateset->addUniform(new osg::Uniform("segments", segments));
+
+	visualTrajectories->addChild(geode.get());
+
+	/*spline = new osg::Vec3dArray(control->size() * n);
 	bspline(control->size() - 1, n, control, spline);
 	for (int i = 0; i < spline->size() - 1; i++)
 	{
@@ -424,10 +495,11 @@ void DrawFlightLine(int flight_id)
 		double lat, lon, alt;
 		mapNode->getMap()->getSRS()->getEllipsoid()->convertXYZToLatLongHeight(src_vec.x(), src_vec.y(), src_vec.z(), lat, lon, alt);
 		flightLine->push_back(osg::Vec3d(osg::RadiansToDegrees(lon), osg::RadiansToDegrees(lat), alt));
-	}
+	}*/
 
+	/*
 	Style flightLineStyle;
-	flightLineStyle.getOrCreate<PolygonSymbol>()->fill()->color() = osg::Vec4(42.0f / 255, 122.0f / 255, 171.0f / 255, 0.3f);
+	//flightLineStyle.getOrCreate<PolygonSymbol>()->fill()->color() = osg::Vec4(42.0f / 255, 122.0f / 255, 171.0f / 255, 0.3f);
 	flightLineStyle.getOrCreate<PointSymbol>()->fill()->color() = osg::Vec4(205.0f / 255, 255.0f / 255, 255.0f / 255, 1.0f);
 	flightLineStyle.getOrCreate<PointSymbol>()->size() = 3.0f;
 	flightLineStyle.getOrCreate<LineSymbol>()->stroke()->color() = osg::Vec4(205.0f / 255, 255.0f / 255, 255.0f / 255, 1.0f);
@@ -436,4 +508,18 @@ void DrawFlightLine(int flight_id)
 	Feature* connectionFeature = new Feature(flightLine, geoSRS, flightLineStyle);
 	FeatureNode* connectionNode = new FeatureNode(mapNode, connectionFeature);
 	visualTrajectories->addChild(connectionNode);
+	*/
+
+	Geometry* flightLine2 = new Polygon();
+	for (int i = 0; i < planePoints[flight_id].size() - 1; i++)
+	{
+		flightLine2->push_back(osg::Vec3d(planePoints[flight_id][i].lon, planePoints[flight_id][i].lat, planePoints[flight_id][i].alt));
+	}
+	Style flightLineStyle2;
+	flightLineStyle2.getOrCreate<PointSymbol>()->fill()->color() = osg::Vec4(255.0f / 255, 0.0f / 255, 0.0f / 255, 1.0f);
+	flightLineStyle2.getOrCreate<PointSymbol>()->size() = 5.0f;
+	flightLineStyle2.getOrCreate<LineSymbol>()->stroke()->width() = 0.0f;
+	Feature* connectionFeature2 = new Feature(flightLine2, geoSRS, flightLineStyle2);
+	FeatureNode* connectionNode2 = new FeatureNode(mapNode, connectionFeature2);
+	visualTrajectories->addChild(connectionNode2);
 }

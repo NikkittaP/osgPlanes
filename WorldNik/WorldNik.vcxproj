@@ -100,13 +100,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;QT_CORE_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Progs\OpenGL\OSG\my\include;C:\Users\Nikita.DEPARTMENT7\Documents\GitHub\osg\include;C:\Users\Nikita.DEPARTMENT7\Documents\GitHub\osgearth\src;D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0;$(QTDIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\OSG\build\include;C:\GitHub\osgearth\src;D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0;G:\OSG\Qt\5.4\msvc2013_64\include;C:\OSG\my\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zm280 /DNOMINMAX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\Progs\OpenGL\OSG\build\lib\OpenThreadsd.lib;D:\Progs\OpenGL\OSG\build\lib\osgd.lib;D:\Progs\OpenGL\OSG\build\lib\osgAnimationd.lib;D:\Progs\OpenGL\OSG\build\lib\osgDBd.lib;D:\Progs\OpenGL\OSG\build\lib\osgGAd.lib;D:\Progs\OpenGL\OSG\build\lib\osgUtild.lib;D:\Progs\OpenGL\OSG\build\lib\osgTextd.lib;D:\Progs\OpenGL\OSG\build\lib\osgViewerd.lib;D:\Progs\OpenGL\OSG\osgEarth\build\lib\Debug\osgEarthd.lib;D:\Progs\OpenGL\OSG\osgEarth\build\lib\Debug\osgEarthAnnotationd.lib;D:\Progs\OpenGL\OSG\osgEarth\build\lib\Debug\osgEarthFeaturesd.lib;D:\Progs\OpenGL\OSG\osgEarth\build\lib\Debug\osgEarthSymbologyd.lib;D:\Progs\OpenGL\OSG\osgEarth\build\lib\Debug\osgEarthUtild.lib;$(QTDIR)/lib/Qt5Cored.lib;$(QTDIR)/lib/Qt5Sqld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>G:\OSG\build\lib\OpenThreadsd.lib;G:\OSG\build\lib\osgd.lib;G:\OSG\build\lib\osgAnimationd.lib;G:\OSG\build\lib\osgDBd.lib;G:\OSG\build\lib\osgGAd.lib;G:\OSG\build\lib\osgUtild.lib;G:\OSG\build\lib\osgTextd.lib;G:\OSG\build\lib\osgViewerd.lib;G:\OSG\osgEarth\build\lib\Debug\osgEarthd.lib;G:\OSG\osgEarth\build\lib\Debug\osgEarthAnnotationd.lib;G:\OSG\osgEarth\build\lib\Debug\osgEarthFeaturesd.lib;G:\OSG\osgEarth\build\lib\Debug\osgEarthSymbologyd.lib;G:\OSG\osgEarth\build\lib\Debug\osgEarthUtild.lib;G:\OSG\Qt\5.4\msvc2013_64\lib\Qt5Cored.lib;G:\OSG\Qt\5.4\msvc2013_64\lib\Qt5Sqld.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -139,7 +139,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;QT_CORE_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0;H:\OSG\build\include;D:\Progs\OpenGL\OSG\my\include;H:\OSG\osgEarth\build\include;$(QTDIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0;G:\OSG\build\include;C:\GitHub\osgearth\src;G:\OSG\Qt\5.4\msvc2013_64\include;C:\OSG\my\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zm260 /DNOMINMAX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -147,7 +147,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>H:\OSG\build\lib\OpenThreads.lib;H:\OSG\build\lib\osg.lib;H:\OSG\build\lib\osgAnimation.lib;H:\OSG\build\lib\osgDB.lib;H:\OSG\build\lib\osgGA.lib;H:\OSG\build\lib\osgUtil.lib;H:\OSG\build\lib\osgViewer.lib;H:\OSG\build\lib\osgText.lib;H:\OSG\osgEarth\build\lib\Release\osgEarth.lib;H:\OSG\osgEarth\build\lib\Release\osgEarthAnnotation.lib;H:\OSG\osgEarth\build\lib\Release\osgEarthFeatures.lib;H:\OSG\osgEarth\build\lib\Release\osgEarthSymbology.lib;H:\OSG\osgEarth\build\lib\Release\osgEarthUtil.lib;$(QTDIR)/lib/Qt5Core.lib;$(QTDIR)/lib/Qt5Sql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>G:\OSG\build\lib\OpenThreads.lib;G:\OSG\build\lib\osg.lib;G:\OSG\build\lib\osgAnimation.lib;G:\OSG\build\lib\osgDB.lib;G:\OSG\build\lib\osgGA.lib;G:\OSG\build\lib\osgUtil.lib;G:\OSG\build\lib\osgViewer.lib;G:\OSG\build\lib\osgText.lib;G:\OSG\osgEarth\build\lib\Release\osgEarth.lib;G:\OSG\osgEarth\build\lib\Release\osgEarthAnnotation.lib;G:\OSG\osgEarth\build\lib\Release\osgEarthFeatures.lib;G:\OSG\osgEarth\build\lib\Release\osgEarthSymbology.lib;G:\OSG\osgEarth\build\lib\Release\osgEarthUtil.lib;G:\OSG\Qt\5.4\msvc2013_64\lib\Qt5Core.lib;G:\OSG\Qt\5.4\msvc2013_64\lib\Qt5Sql.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\Progs\OpenGL\OSG\downloaded\boost_1_55_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
     </Link>
