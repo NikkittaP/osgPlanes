@@ -19,6 +19,8 @@ In future I plan to add UDP/TCP support.
 You can find a video, demonstrating previous version of
 osgPlanes, here http://www.youtube.com/watch?v=UeM9MZiLqhY
 
+[<img src="https://i.ytimg.com/vi/UeM9MZiLqhY/maxresdefault.jpg" width="50%">](https://www.youtube.com/watch?v=UeM9MZiLqhY "osgPlanes")
+
 
 If you are intrested in live demo or if you have any questions,
 here is my contact email - nikitapetroff@gmail.com
